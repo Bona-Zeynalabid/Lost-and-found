@@ -1,16 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import useStore from "@/lib/store";
 
 export default function Header() {
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+  const darkMode = useStore((s) => s.darkMode);
+  const toggleDarkMode = useStore((s) => s.toggleDarkMode);
 
   return (
     <header className="glass-panel sticky top-0 z-40 w-full px-6 py-4 flex items-center justify-between border-b">
@@ -25,7 +18,7 @@ export default function Header() {
       </div>
 
       <button
-        onClick={() => setDarkMode(!darkMode)}
+        onClick={toggleDarkMode}
         className="px-3 py-1.5 text-xs tracking-wider uppercase border border-[var(--border-color)] rounded-md hover:border-[var(--accent-gold)] transition-colors"
       >
         {darkMode ? "Light Protocol" : "Dark Protocol"}

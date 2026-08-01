@@ -67,6 +67,18 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/stats', protect, async (req, res) => {
+  try {
+    const lostCount = await LostFound.countDocuments({ user: req.user._id, type: 'lost' });
+    const foundCount = await LostFound.countDocuments({ user: req.user._id, type: 'found' });
+    const resolvedCount = await LostFound.countDocuments({ user: req.user._id, status: 'resolved' });
+
+    res.json({ lostCount, foundCount, resolvedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 router.get('/:id', async (req, res) => {
   try {

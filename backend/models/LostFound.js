@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 
 const lostFoundSchema = new mongoose.Schema(
   {
@@ -122,5 +122,4 @@ lostFoundSchema.index({ user: 1, createdAt: -1 });
 lostFoundSchema.index({ title: "text", description: "text" });
 
 const LostFound = mongoose.models.LostFound || mongoose.model("LostFound", lostFoundSchema);
-
-export default LostFound;
+module.exports =LostFound;

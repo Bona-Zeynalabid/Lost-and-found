@@ -1,10 +1,13 @@
 "use client";
+import { useRouter } from "next/navigation";
 
-export default function MobileFab({ onOpenReport }) {
+export default function MobileFab() {
+  const router = useRouter();
+
   return (
     <div className="fixed bottom-16 right-4 z-40 lg:hidden flex flex-col items-end space-y-2">
       <button
-        onClick={() => onOpenReport && onOpenReport("lost")}
+        onClick={() => router.push("/report")}
         className="glass-panel flex items-center space-x-2 px-4 py-3 border border-[var(--accent-gold)] bg-[var(--bg-main)] text-[var(--text-primary)] shadow-md hover:bg-[var(--accent-gold)] hover:text-white transition-all rounded-full active:scale-95"
         title="File Case Report"
       >
