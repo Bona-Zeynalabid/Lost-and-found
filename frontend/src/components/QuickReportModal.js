@@ -20,7 +20,7 @@ export default function QuickReportModal({ isOpen, initialType = "lost", onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
       <div className="glass-panel w-full max-w-md p-6 border border-[var(--border-color)] bg-[var(--bg-main)] shadow-lg space-y-4 rounded-xs">
-        {/* Header */}
+        
         <div className="flex justify-between items-baseline border-b border-[var(--border-color)] pb-3">
           <h3 className="font-serif-heading text-lg font-normal">
             File Quick Case Report

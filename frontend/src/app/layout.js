@@ -10,7 +10,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Blocking script to apply dark mode before paint */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

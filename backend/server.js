@@ -7,6 +7,8 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
 const communityRoutes = require('./routes/community');
+const notificationRoutes = require('./routes/notifications');
+
 
 
 mongoose
@@ -30,6 +32,7 @@ mongoose
     app.use('/api/auth', authRoutes);
     app.use('/api/items', itemRoutes);
     app.use('/api/community', communityRoutes);
+    app.use('/api/notifications', notificationRoutes);
 
    
     const PORT = process.env.PORT || 5000;

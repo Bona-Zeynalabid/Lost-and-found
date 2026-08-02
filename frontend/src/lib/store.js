@@ -1,8 +1,7 @@
-
 import { create } from 'zustand';
 
 const useStore = create((set, get) => ({
-  
+ 
   darkMode: false,
   setDarkMode: (value) => {
     if (typeof window !== 'undefined') {
@@ -25,7 +24,7 @@ const useStore = create((set, get) => ({
     }
   },
 
-  
+ 
   user: null,
   setUser: (user) => set({ user }),
   clearUser: () => set({ user: null }),
@@ -34,13 +33,23 @@ const useStore = create((set, get) => ({
       const res = await fetch('http://localhost:5000/api/auth/me', {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Not authenticated');
+      if (!res.ok) {
+        set({ user: null });
+        return;
+      }
       const data = await res.json();
       set({ user: data.user });
     } catch {
       set({ user: null });
     }
   },
+
+
+  myItems: [],
+  communityItems: [],
+  setMyItems: (items) => set({ myItems: items }),
+  setCommunityItems: (items) => set({ communityItems: items }),
+  clearItems: () => set({ myItems: [], communityItems: [] }),
 }));
 
 export default useStore;

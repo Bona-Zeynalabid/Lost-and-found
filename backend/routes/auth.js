@@ -5,8 +5,7 @@ const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
-
+const JWT_SECRET = process.env.JWT_SECRET || 'mysecretone';
 
 const sendTokenResponse = (user, statusCode, res) => {
   const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
@@ -21,7 +20,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   res.status(statusCode).json({ user: user.toJSON() });
 };
 
-
+// POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
     const { email, password, firstName, lastName } = req.body;
@@ -47,7 +46,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
+// POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -66,7 +65,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
+// POST /api/auth/google
 router.post('/google', async (req, res) => {
   try {
     const { googleId, email, firstName, lastName } = req.body;
@@ -87,11 +86,12 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// GET /api/auth/me
 router.get('/me', protect, async (req, res) => {
   res.json({ user: req.user });
 });
 
-
+// POST /api/auth/logout
 router.post('/logout', (req, res) => {
   res.cookie('token', '', { maxAge: 0 });
   res.json({ success: true });

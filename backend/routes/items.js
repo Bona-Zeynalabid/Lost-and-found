@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const LostFound = require('../models/LostFound');
 const { protect } = require('../middleware/auth');
+const { findMatches } = require('../utils/matching');
+const Notification = require('../models/Notification');
 
 
 router.use(protect);
@@ -59,7 +61,40 @@ router.post('/', async (req, res) => {
       brand,
       serialNumber,
     });
+  try {
+      const matches = await findMatches(item, LostFound, Notification);
 
+      // Create notifications for both parties
+      const notifications = [];
+
+      // Notify the new item's owner about matches
+      for (const match of matches) {
+        // Notification for the new item owner
+        notifications.push({
+          user: item.user,
+          message: `We found a potential ${match.item.type} item that may match your ${item.type} item: "${match.item.title}" (${match.score}% match)`,
+          ownItem: item._id,
+          matchedItem: match.item._id,
+          matchedItemType: match.item.type,
+        });
+
+        // Notification for the matched item owner
+        notifications.push({
+          user: match.item.user._id,
+          message: `Your ${match.item.type} item "${match.item.title}" may match a recently posted ${item.type} item: "${item.title}" (${match.score}% match)`,
+          ownItem: match.item._id,
+          matchedItem: item._id,
+          matchedItemType: item.type,
+        });
+      }
+
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    } catch (matchError) {
+      console.error('Matching process error:', matchError);
+      // Don't fail the item creation if matching fails
+    }
     res.status(201).json(item);
   } catch (err) {
     console.error(err);

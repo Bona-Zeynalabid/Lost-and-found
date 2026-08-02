@@ -7,7 +7,6 @@ export default function Navigation() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Clean inline SVGs matching the institutional heritage look (no emojis)
   const links = [
     {
       name: "Dashboard",
@@ -29,7 +28,7 @@ export default function Navigation() {
     },
     {
       name: "Notifications",
-      href: "/notification",
+      href: "/notifications",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -46,7 +45,7 @@ export default function Navigation() {
       ),
     },
     {
-      name: "Profile / Settings",
+      name: "Profile ",
       href: "/profile",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,56 +65,104 @@ export default function Navigation() {
     },
   ];
 
-  return (
-    <nav
-      className={`glass-panel fixed bottom-0 left-0 right-0 sm:static sm:min-h-screen p-3 border-t sm:border-t-0 sm:border-r border-[var(--border-color)] z-30 transition-all duration-300 ${
-        collapsed ? "sm:w-16" : "sm:w-64"
-      }`}
-    >
-      <div className="flex sm:flex-col justify-around sm:justify-start space-x-1 sm:space-x-0 sm:space-y-2">
-        {/* Toggle Button for Desktop View */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="hidden sm:flex items-center justify-between w-full px-3 py-2 text-[10px] uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          title={collapsed ? "Expand Navigation" : "Collapse Navigation"}
-        >
-          {!collapsed && <span>Directory</span>}
-          <svg
-            className={`w-3.5 h-3.5 transform transition-transform ${
-              collapsed ? "rotate-180 mx-auto" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        </button>
+  const row1 = links.slice(0, 3);
+  const row2 = links.slice(3, 6);
 
-        {/* Navigation Items */}
-        {links.map((link) => {
-          const isActive = pathname === link.href;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              title={collapsed ? link.name : ""}
-              className={`flex items-center space-x-3 px-3 py-2.5 rounded-xs text-[11px] font-medium tracking-wider uppercase transition-all ${
-                collapsed ? "justify-center" : "justify-start"
-              } ${
-                isActive
-                  ? "bg-[var(--accent-green)] text-white shadow-xs"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]"
+  return (
+    <>
+     
+      <nav className="sm:hidden glass-panel fixed bottom-0 left-0 right-0 border-t border-[var(--border-color)] z-30">
+        <div className="flex flex-col">
+          <div className="flex justify-around py-1 border-b border-[var(--border-color)]/50">
+            {row1.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex flex-col items-center justify-center px-3 py-1 rounded-xs transition-colors ${
+                    isActive
+                      ? "bg-[var(--accent-green)] text-white"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span>{link.icon}</span>
+                  <span className="text-[9px] uppercase tracking-wider mt-0.5">{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="flex justify-around py-1">
+            {row2.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex flex-col items-center justify-center px-3 py-1 rounded-xs transition-colors ${
+                    isActive
+                      ? "bg-[var(--accent-green)] text-white"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span>{link.icon}</span>
+                  <span className="text-[9px] uppercase tracking-wider mt-0.5">{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Desktop: Sidebar */}
+      <nav
+        className={`hidden sm:block glass-panel fixed bottom-0 left-0 right-0 sm:static sm:min-h-screen p-3 border-t sm:border-t-0 sm:border-r border-[var(--border-color)] z-30 transition-all duration-300 ${
+          collapsed ? "sm:w-16" : "sm:w-64"
+        }`}
+      >
+        <div className="flex sm:flex-col justify-around sm:justify-start space-x-1 sm:space-x-0 sm:space-y-2">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden sm:flex items-center justify-between w-full px-3 py-2 text-[10px] uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            title={collapsed ? "Expand Navigation" : "Collapse Navigation"}
+          >
+            {!collapsed && <span>Directory</span>}
+            <svg
+              className={`w-3.5 h-3.5 transform transition-transform ${
+                collapsed ? "rotate-180 mx-auto" : ""
               }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <span className="shrink-0">{link.icon}</span>
-              {!collapsed && (
-                <span className="truncate hidden sm:inline">{link.name}</span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {links.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                title={collapsed ? link.name : ""}
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-xs text-[11px] font-medium tracking-wider uppercase transition-all ${
+                  collapsed ? "justify-center" : "justify-start"
+                } ${
+                  isActive
+                    ? "bg-[var(--accent-green)] text-white shadow-xs"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]"
+                }`}
+              >
+                <span className="shrink-0">{link.icon}</span>
+                {!collapsed && (
+                  <span className="truncate hidden sm:inline">{link.name}</span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }
