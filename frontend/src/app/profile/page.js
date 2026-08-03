@@ -168,8 +168,8 @@ export default function ProfilePage() {
               {storeUser.email}
             </p>
             <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-              Member since {joinYear}
-              {isGoogleUser && " • Google Account"}
+             Joined on {joinYear}
+            
             </p>
           </div>
         </div>

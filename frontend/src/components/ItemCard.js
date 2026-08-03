@@ -1,132 +1,50 @@
-export default function ItemCard({ item, onClick }) {
+export default function ItemCard({ item, onClick, horizontal = false }) {
   const imageUrl = item.images?.[0]?.url || null;
+  const hasReward = item.reward && item.reward > 0;
 
-  let locationText = "Unknown location";
+  let locationText = "";
   if (item.location) {
-    if (typeof item.location === "string") {
-      locationText = item.location;
-    } else if (item.location.address || item.location.city) {
-      locationText = [item.location.address, item.location.city]
-        .filter(Boolean)
-        .join(", ");
-    }
+    locationText = item.location.address || item.location.city || "";
   }
 
   const formattedDate = item.dateOccurred
-    ? new Date(item.dateOccurred).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : "Unknown date";
-
- 
-  const getCategoryPreview = () => {
-    if (!item.details) return null;
-    const d = item.details;
-    switch (item.category) {
-      case "Phone":
-        return d.brand && d.model ? `${d.brand} ${d.model}` : d.brand || d.model || null;
-      case "Laptop":
-        return d.brand && d.model ? `${d.brand} ${d.model}` : d.brand || d.model || null;
-      case "ID":
-        return d.fullName ? `Name: ${d.fullName}` : d.idNumber ? `ID: ${d.idNumber}` : null;
-      case "Wallet":
-        return d.color || d.brand || null;
-      case "Keys":
-        return d.numberOfKeys ? `${d.numberOfKeys} key(s)` : null;
-      case "Bag":
-        return d.color || d.brand || null;
-      case "Jewelry":
-        return d.deviceType || d.material || null;
-      case "Clothing":
-        return d.clothingType || d.color || null;
-      case "Pet":
-        return d.species || d.breed || null;
-      case "Electronics":
-        return d.deviceType || d.brand || null;
-      case "Documents":
-        return d.documentType || d.nameOnDocument || null;
-      default:
-        return null;
-    }
-  };
-
-  const categoryPreview = getCategoryPreview();
-
-  const hasReward = item.reward && item.reward > 0;
+    ? new Date(item.dateOccurred).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : "";
 
   return (
-    <article
+    <div
       onClick={onClick}
-      className={`border border-[var(--border-color)] p-4 bg-[var(--card-bg)] hover:border-[var(--accent-gold)] transition-colors rounded-md ${
-        onClick ? "cursor-pointer" : ""
+      className={`bg-[var(--card-bg)] border border-[var(--border-color)] hover:border-[var(--accent-gold)] rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md ${
+        horizontal ? "flex flex-row" : "flex flex-col"
       }`}
     >
-      <div className="flex flex-col sm:flex-row gap-4">
-        
-        {imageUrl && (
-          <div className="w-full sm:w-28 h-28 shrink-0 bg-[var(--border-color)] overflow-hidden rounded-sm">
-            <img
-              src={imageUrl}
-              alt={item.title}
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
-            />
-          </div>
+      {/* Image */}
+      <div className={`${horizontal ? "w-36 h-36 flex-shrink-0" : "w-full h-40"} bg-[var(--border-color)] relative`}>
+        {imageUrl ? (
+          <img src={imageUrl} alt={item.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[var(--text-tertiary)] text-xs">No Image</div>
         )}
+      </div>
 
-        
-        <div className="flex-1 flex flex-col justify-between space-y-2">
-          <div>
-            
-            <div className="flex justify-between items-baseline mb-1">
-              <h3 className="font-serif-heading text-base font-medium truncate">
-                {item.title}
-              </h3>
-              <span
-                className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${
-                  item.type === "lost"
-                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                }`}
-              >
-                {item.type}
-              </span>
-            </div>
-
-          
-            <p className="text-xs text-[var(--text-secondary)] mb-1">
-              {locationText} &bull; {formattedDate}
-            </p>
-
-            
-            {categoryPreview && (
-              <p className="text-xs text-[var(--accent-gold)] font-medium mb-1">
-                {categoryPreview}
-              </p>
-            )}
-
-            
-            {item.description && (
-              <p className="text-xs text-[var(--text-primary)] leading-relaxed line-clamp-2">
-                {item.description}
-              </p>
-            )}
-
-          
-            {hasReward && (
-              <span className="inline-block mt-1 text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                ${item.reward} Reward
-              </span>
-            )}
+      {/* Content */}
+      <div className={`${horizontal ? "flex-1" : ""} p-3 flex flex-col justify-between`}>
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className={`text-xs font-semibold uppercase ${item.type === "lost" ? "text-[var(--accent-gold)]" : "text-[var(--accent-gold)]"}`}>
+              {item.type}
+            </span>
+            {hasReward && item.reward>0?<span className="text-xs font-bold text-[var(--accent-gold)]">${item.reward}</span>:<span></span>}
           </div>
-
-         
-          <div className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest pt-2 border-t border-[var(--border-color)]">
-            Ref: {item._id?.toString().slice(-8) || "N/A"}
-          </div>
+          <h3 className="font-semibold text-sm text-[var(--text-primary)] line-clamp-1">{item.title}</h3>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.category}</p>
+          {locationText && <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{locationText}</p>}
+        </div>
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--border-color)]">
+          <span className="text-[10px] text-[var(--text-secondary)]">{formattedDate}</span>
+          {item.owner && <span className="text-[10px] text-[var(--accent-gold)] font-semibold">Yours</span>}
         </div>
       </div>
-    </article>
+    </div>
   );
 }

@@ -175,4 +175,12 @@
   .btn-accent:active {
     transform: scale(0.97);
   }
+  select option {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+
+select {
+  color-scheme: light dark;
+}
 }

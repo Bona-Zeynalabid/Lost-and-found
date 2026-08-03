@@ -8,7 +8,7 @@ const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
 const communityRoutes = require('./routes/community');
 const notificationRoutes = require('./routes/notifications');
-
+const uploadRoutes = require('./routes/upload');
 
 
 mongoose
@@ -33,6 +33,7 @@ mongoose
     app.use('/api/items', itemRoutes);
     app.use('/api/community', communityRoutes);
     app.use('/api/notifications', notificationRoutes);
+    app.use('/api/upload', uploadRoutes);
 
    
     const PORT = process.env.PORT || 5000;

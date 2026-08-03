@@ -70,7 +70,7 @@ export default function Navigation() {
 
   return (
     <>
-     
+      {/* Mobile Bottom Navigation Bar */}
       <nav className="sm:hidden glass-panel fixed bottom-0 left-0 right-0 border-t border-[var(--border-color)] z-30">
         <div className="flex flex-col">
           <div className="flex justify-around py-1 border-b border-[var(--border-color)]/50">
@@ -116,7 +116,7 @@ export default function Navigation() {
 
       {/* Desktop: Sidebar */}
       <nav
-        className={`hidden sm:block glass-panel fixed bottom-0 left-0 right-0 sm:static sm:min-h-screen p-3 border-t sm:border-t-0 sm:border-r border-[var(--border-color)] z-30 transition-all duration-300 ${
+        className={`hidden sm:block glass-panel sm:sticky sm:top-0 sm:h-screen p-3 border-r border-[var(--border-color)] z-30 transition-all duration-300 ${
           collapsed ? "sm:w-16" : "sm:w-64"
         }`}
       >
