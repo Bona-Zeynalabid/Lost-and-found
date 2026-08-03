@@ -30,6 +30,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+   telegramChatId: {
+    type: String,
+    default: null,
+  },
+  telegramConnected: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

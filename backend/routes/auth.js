@@ -150,4 +150,35 @@ router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
+
+router.put('/connect-telegram', protect, async (req, res) => {
+  try {
+    const { telegramChatId } = req.body;
+    if (!telegramChatId) {
+      return res.status(400).json({ error: 'Telegram Chat ID required' });
+    }
+
+    req.user.telegramChatId = telegramChatId;
+    req.user.telegramConnected = true;
+    await req.user.save();
+
+    res.json({ success: true, message: 'Telegram connected successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+router.put('/disconnect-telegram', protect, async (req, res) => {
+  try {
+    req.user.telegramChatId = null;
+    req.user.telegramConnected = false;
+    await req.user.save();
+
+    res.json({ success: true, message: 'Telegram disconnected' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

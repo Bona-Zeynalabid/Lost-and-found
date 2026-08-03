@@ -9,6 +9,7 @@ const itemRoutes = require('./routes/items');
 const communityRoutes = require('./routes/community');
 const notificationRoutes = require('./routes/notifications');
 const uploadRoutes = require('./routes/upload');
+require('./config/telegramBot');
 
 
 mongoose

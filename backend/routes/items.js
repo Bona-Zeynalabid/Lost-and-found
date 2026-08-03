@@ -4,7 +4,7 @@ const LostFound = require('../models/LostFound');
 const { protect } = require('../middleware/auth');
 const { findMatches } = require('../utils/matching');
 const Notification = require('../models/Notification');
-
+const clienturl = process.env.CLIENT_URL
 
 router.use(protect);
 
@@ -61,40 +61,59 @@ router.post('/', async (req, res) => {
       brand,
       serialNumber,
     });
-  try {
+
+    // Run matching after creating the item
+    try {
       const matches = await findMatches(item, LostFound, Notification);
 
-     
-      const notifications = [];
+      if (matches.length > 0) {
+        const notifications = [];
 
-      
-      for (const match of matches) {
-       
-        notifications.push({
-          user: item.user,
-          message: `We found a potential ${match.item.type} item that may match your ${item.type} item: "${match.item.title}" (${match.score}% match)`,
-          ownItem: item._id,
-          matchedItem: match.item._id,
-          matchedItemType: match.item.type,
-        });
+        for (const match of matches) {
+          notifications.push({
+            user: item.user,
+            message: `We found a potential ${match.item.type} item that may match your ${item.type} item: "${match.item.title}" (${match.score}% match)`,
+            ownItem: item._id,
+            matchedItem: match.item._id,
+            matchedItemType: match.item.type,
+          });
 
-      
-        notifications.push({
-          user: match.item.user._id,
-          message: `Your ${match.item.type} item "${match.item.title}" may match a recently posted ${item.type} item: "${item.title}" (${match.score}% match)`,
-          ownItem: match.item._id,
-          matchedItem: item._id,
-          matchedItemType: item.type,
-        });
-      }
+          notifications.push({
+            user: match.item.user._id,
+            message: `Your ${match.item.type} item "${match.item.title}" may match a recently posted ${item.type} item: "${item.title}" (${match.score}% match)`,
+            ownItem: match.item._id,
+            matchedItem: item._id,
+            matchedItemType: item.type,
+          });
+        }
 
-      if (notifications.length > 0) {
         await Notification.insertMany(notifications);
+
+        // Send Telegram notifications with inline keyboard
+        const { sendTelegramNotification } = require('../config/telegramBot');
+
+        for (const match of matches) {
+          const newOwnerMsg = `<b>🔔 Match Found!</b>\n\nWe found a potential <b>${match.item.type}</b> item that may match your <b>${item.type}</b> item.\n\n<b>Your item:</b> ${item.title}\n<b>Matched item:</b> ${match.item.title}\n<b>Match score:</b> ${match.score}%`;
+
+          await sendTelegramNotification(item.user.toString(), newOwnerMsg, {
+            inline_keyboard: [
+              [{ text: '🔍 View on FoundIt', url: 'https://gemini.google.com/' }],
+            ],
+          });
+
+          const matchedOwnerMsg = `<b>🔔 Match Found!</b>\n\nYour <b>${match.item.type}</b> item "<b>${match.item.title}</b>" may match a recently posted <b>${item.type}</b> item.\n\n<b>New item:</b> ${item.title}\n<b>Match score:</b> ${match.score}%`;
+
+          await sendTelegramNotification(match.item.user._id.toString(), matchedOwnerMsg, {
+            inline_keyboard: [
+              [{ text: '🔍 View on FoundIt', url: 'https://gemini.google.com/' }],
+            ],
+          });
+        }
       }
     } catch (matchError) {
       console.error('Matching process error:', matchError);
-      
     }
+
     res.status(201).json(item);
   } catch (err) {
     console.error(err);

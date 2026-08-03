@@ -183,182 +183,161 @@ export default function NotificationsPage() {
       )}
 
       {/* Centered Popup Modal for Full Details */}
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedItem(null)}
+     {/* Centered Popup Modal for Full Details */}
+{selectedItem && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    onClick={() => setSelectedItem(null)}
+  >
+    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
+    <div
+      className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto bg-[var(--bg-main)] rounded-2xl shadow-2xl p-6 z-10 border border-[var(--border-color)]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close button */}
+      <button
+        onClick={() => setSelectedItem(null)}
+        className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      {/* Type Badge */}
+      <div className="flex items-center gap-2 mb-4">
+        <span
+          className={`w-3 h-3 rounded-full ${
+            selectedItem.type === "lost" ? "bg-red-500" : "bg-green-500"
+          }`}
+        />
+        <span
+          className={`text-xs font-bold uppercase tracking-wide ${
+            selectedItem.type === "lost"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
         >
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          {selectedItem.type} Item
+        </span>
+        <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] ml-auto border border-[var(--border-color)] px-2 py-0.5 rounded-full">
+          {selectedItem.status}
+        </span>
+      </div>
 
-          {/* Modal */}
-          <div
-            className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 border border-[var(--border-color)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      {/* Title & Category */}
+      <h2 className="text-xl font-bold text-[var(--text-primary)]">{selectedItem.title}</h2>
+      <p className="text-sm text-[var(--text-secondary)] mt-1 capitalize">
+        {selectedItem.category}
+      </p>
 
-            {/* Type Badge */}
-            <div className="flex items-center gap-2 mb-4">
-              <span
-                className={`w-3 h-3 rounded-full ${
-                  selectedItem.type === "lost" ? "bg-red-500" : "bg-green-500"
-                }`}
-              />
-              <span
-                className={`text-xs font-bold uppercase tracking-wide ${
-                  selectedItem.type === "lost"
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-green-600 dark:text-green-400"
-                }`}
-              >
-                {selectedItem.type} Item
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] ml-auto border border-[var(--border-color)] px-2 py-0.5 rounded-full">
-                {selectedItem.status}
-              </span>
-            </div>
+      <hr className="my-4 border-[var(--border-color)]" />
 
-            {/* Title & Category */}
-            <h2 className="text-xl font-bold leading-tight">{selectedItem.title}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 capitalize">
-              {selectedItem.category}
+      {/* All Details */}
+      <div className="space-y-3 text-sm">
+        {selectedItem.description && (
+          <div>
+            <span className="font-semibold text-xs uppercase tracking-wider text-[var(--text-secondary)]">
+              Description
+            </span>
+            <p className="mt-1 text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
+              {selectedItem.description}
             </p>
-
-            <hr className="my-4 border-gray-200 dark:border-gray-700" />
-
-            {/* All Details */}
-            <div className="space-y-3 text-sm">
-              {/* Description */}
-              {selectedItem.description && (
-                <div>
-                  <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Description
-                  </span>
-                  <p className="mt-1 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {selectedItem.description}
-                  </p>
-                </div>
-              )}
-
-              {/* Location */}
-              <div className="flex justify-between">
-                <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Address
-                </span>
-                <span className="text-right max-w-[60%]">
-                  {selectedItem.location?.address || "Not specified"}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  City
-                </span>
-                <span>{selectedItem.location?.city || "Not specified"}</span>
-              </div>
-
-              {/* Date */}
-              <div className="flex justify-between">
-                <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Date
-                </span>
-                <span>
-                  {selectedItem.dateOccurred
-                    ? new Date(selectedItem.dateOccurred).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "Unknown"}
-                </span>
-              </div>
-
-              {/* Contact Info */}
-              <hr className="border-gray-200 dark:border-gray-700" />
-              <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Contact Information
-              </span>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Phone</span>
-                <span>{selectedItem.contact?.phone || "Not provided"}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Email</span>
-                <span>{selectedItem.contact?.email || "Not provided"}</span>
-              </div>
-
-              {/* Reward */}
-              {selectedItem.reward > 0 && (
-                <div className="flex justify-between">
-                  <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Reward
-                  </span>
-                  <span className="text-green-600 font-bold">${selectedItem.reward}</span>
-                </div>
-              )}
-
-              {/* Category-specific details */}
-              {selectedItem.details && Object.keys(selectedItem.details).filter(k => selectedItem.details[k]).length > 0 && (
-                <>
-                  <hr className="border-gray-200 dark:border-gray-700" />
-                  <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {selectedItem.category} Specifics
-                  </span>
-                  {Object.entries(selectedItem.details).map(([key, value]) => {
-                    if (!value || key === "otherDescription") return null;
-                    return (
-                      <div key={key} className="flex justify-between">
-                        <span className="text-gray-500 dark:text-gray-400 capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}
-                        </span>
-                        <span className="text-right max-w-[60%]">{value}</span>
-                      </div>
-                    );
-                  })}
-                </>
-              )}
-
-              {/* Tags */}
-              {selectedItem.tags && selectedItem.tags.length > 0 && (
-                <div>
-                  <span className="font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Tags
-                  </span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedItem.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-[10px] uppercase tracking-wider rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="mt-6 w-full py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-medium transition-colors"
-            >
-              Close
-            </button>
           </div>
+        )}
+
+        <div className="flex justify-between">
+          <span className="text-[var(--text-secondary)]">Address</span>
+          <span className="text-[var(--text-primary)] text-right max-w-[60%]">
+            {selectedItem.location?.address || "Not specified"}
+          </span>
         </div>
-      )}
+
+        <div className="flex justify-between">
+          <span className="text-[var(--text-secondary)]">City</span>
+          <span className="text-[var(--text-primary)]">{selectedItem.location?.city || "Not specified"}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="text-[var(--text-secondary)]">Date</span>
+          <span className="text-[var(--text-primary)]">
+            {selectedItem.dateOccurred
+              ? new Date(selectedItem.dateOccurred).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "Unknown"}
+          </span>
+        </div>
+
+        <hr className="border-[var(--border-color)]" />
+        <span className="font-semibold text-xs uppercase tracking-wider text-[var(--text-secondary)]">
+          Contact Information
+        </span>
+
+        <div className="flex justify-between">
+          <span className="text-[var(--text-secondary)]">Phone</span>
+          <span className="text-[var(--text-primary)]">{selectedItem.contact?.phone || "Not provided"}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="text-[var(--text-secondary)]">Email</span>
+          <span className="text-[var(--text-primary)]">{selectedItem.contact?.email || "Not provided"}</span>
+        </div>
+
+        {selectedItem.reward > 0 && (
+          <div className="flex justify-between">
+            <span className="text-[var(--text-secondary)]">Reward</span>
+            <span className="text-green-600 font-bold">${selectedItem.reward}</span>
+          </div>
+        )}
+
+        {selectedItem.details && Object.keys(selectedItem.details).filter(k => selectedItem.details[k]).length > 0 && (
+          <>
+            <hr className="border-[var(--border-color)]" />
+            <span className="font-semibold text-xs uppercase tracking-wider text-[var(--text-secondary)]">
+              {selectedItem.category} Specifics
+            </span>
+            {Object.entries(selectedItem.details).map(([key, value]) => {
+              if (!value || key === "otherDescription") return null;
+              return (
+                <div key={key} className="flex justify-between">
+                  <span className="text-[var(--text-secondary)] capitalize">
+                    {key.replace(/([A-Z])/g, " $1").trim()}
+                  </span>
+                  <span className="text-[var(--text-primary)] text-right max-w-[60%]">{value}</span>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {selectedItem.tags && selectedItem.tags.length > 0 && (
+          <div>
+            <span className="font-semibold text-xs uppercase tracking-wider text-[var(--text-secondary)]">Tags</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {selectedItem.tags.map((tag, idx) => (
+                <span key={idx} className="px-2 py-0.5 bg-[var(--border-color)] text-[var(--text-primary)] text-[10px] uppercase tracking-wider rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+     
+      <button
+        onClick={() => setSelectedItem(null)}
+        className="mt-6 w-full py-2.5 bg-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--border-strong)] rounded-xl text-sm font-medium transition-colors"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
