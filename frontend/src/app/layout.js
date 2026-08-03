@@ -1,5 +1,6 @@
 import "./globals.css";
 import LayoutShell from "../components/LayoutShell";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
   title: "FoundIt - Heritage Lost & Found Ledger",
@@ -29,7 +30,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <LayoutShell>{children}</LayoutShell>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+          <LayoutShell>{children}</LayoutShell>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

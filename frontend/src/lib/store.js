@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const useStore = create((set, get) => ({
- 
+  
   darkMode: false,
   setDarkMode: (value) => {
     if (typeof window !== 'undefined') {
@@ -28,6 +28,12 @@ const useStore = create((set, get) => ({
   user: null,
   setUser: (user) => set({ user }),
   clearUser: () => set({ user: null }),
+  logout: () => {
+    set({ user: null });
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('theme'); 
+    }
+  },
   fetchUser: async () => {
     try {
       const res = await fetch('http://localhost:5000/api/auth/me', {
@@ -44,7 +50,7 @@ const useStore = create((set, get) => ({
     }
   },
 
-
+ 
   myItems: [],
   communityItems: [],
   setMyItems: (items) => set({ myItems: items }),

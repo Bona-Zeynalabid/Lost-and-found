@@ -7,10 +7,20 @@ export default function ProfilePage() {
   const router = useRouter();
   const storeUser = useStore((s) => s.user);
   const logout = useStore((s) => s.logout);
+  const setUser = useStore((s) => s.setUser);
   const [stats, setStats] = useState({ lostCount: 0, foundCount: 0, resolvedCount: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // Password change fields
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -44,8 +54,52 @@ export default function ProfilePage() {
     } catch (err) {
       console.error("Logout error:", err);
     }
+    // Clear user from store FIRST
     logout();
-    router.push("/");
+    // Then redirect
+    router.replace("/");
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setSuccess("");
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/update-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          currentPassword: currentPassword || undefined,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update password");
+
+      setSuccess("Password updated successfully");
+      setShowPasswordForm(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setPasswordError(err.message);
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   if (loading) {
@@ -78,6 +132,8 @@ export default function ProfilePage() {
 
   const joinYear = new Date(storeUser.joinDate).getFullYear();
   const initials = `${storeUser.firstName.charAt(0).toUpperCase()}${storeUser.lastName ? storeUser.lastName.charAt(0).toUpperCase() : ""}`;
+  const hasPassword = !!storeUser.password;
+  const isGoogleUser = !!storeUser.googleId;
 
   return (
     <div className="space-y-6">
@@ -90,6 +146,13 @@ export default function ProfilePage() {
           Manage your credentials and view your activity.
         </p>
       </section>
+
+      {/* Success message */}
+      {success && (
+        <div className="p-3 border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 text-xs text-green-700 dark:text-green-400">
+          {success}
+        </div>
+      )}
 
       {/* Profile card */}
       <div className="glass-panel p-6 rounded-xs space-y-4">
@@ -106,6 +169,7 @@ export default function ProfilePage() {
             </p>
             <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider mt-1">
               Member since {joinYear}
+              {isGoogleUser && " • Google Account"}
             </p>
           </div>
         </div>
@@ -127,6 +191,84 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Password Section */}
+      <div className="glass-panel p-6 rounded-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-serif-heading text-base font-semibold">Password</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+              {hasPassword ? "Change your password" : "Set a password to login with email"}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowPasswordForm(!showPasswordForm)}
+            className="px-4 py-2 border border-[var(--border-color)] text-[10px] uppercase tracking-wider hover:border-[var(--accent-gold)] transition-colors"
+          >
+            {showPasswordForm ? "Cancel" : hasPassword ? "Change" : "Set Password"}
+          </button>
+        </div>
+
+        {showPasswordForm && (
+          <form onSubmit={handlePasswordUpdate} className="space-y-3 pt-3 border-t border-[var(--border-color)]">
+            {hasPassword && (
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  required={hasPassword}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">
+                New Password
+              </label>
+              <input
+                type="password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]"
+              />
+            </div>
+
+            {passwordError && (
+              <p className="text-xs text-red-600">{passwordError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={passwordLoading}
+              className="w-full py-2.5 bg-[var(--accent-green)] text-white text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {passwordLoading ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+        )}
+      </div>
+
       {/* Logout Button */}
       <button
         onClick={() => setShowLogoutConfirm(true)}
@@ -140,14 +282,14 @@ export default function ProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm z-10 border border-[var(--border-color)]">
-            <h3 className="font-serif-heading text-lg font-semibold mb-2">Confirm Logout</h3>
+            <h3 className="font-serif-heading text-lg font-semibold mb-2 text-[var(--text-primary)]">Confirm Logout</h3>
             <p className="text-xs text-[var(--text-secondary)] mb-6">
               Are you sure you want to log out of your account?
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-2.5 border border-[var(--border-color)] text-xs uppercase tracking-wider rounded-xs hover:bg-[var(--border-color)] transition-colors"
+                className="flex-1 py-2.5 border border-[var(--border-color)] text-[var(--text-primary)] text-xs uppercase tracking-wider rounded-xs hover:bg-[var(--border-color)] transition-colors"
               >
                 Cancel
               </button>
