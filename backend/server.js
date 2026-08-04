@@ -54,11 +54,26 @@ mongoose
 
   
     app.use(
-      cors({
-        credentials: true,
-        origin: 'https://lost-and-found-ruddy-rho.vercel.app/' || 'http://localhost:3000',
-      })
-    );
+  cors({
+    credentials: true,
+    origin: function (origin, callback) {
+      
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://lost-and-found-ruddy-rho.vercel.app',
+        'https://lost-and-found-ruddy-rho.vercel.app/',
+      ];
+      
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin + '/')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
     app.use(express.json({ limit: '10mb' }));
     app.use(cookieParser());
 
