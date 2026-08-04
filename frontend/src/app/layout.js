@@ -3,8 +3,11 @@ import LayoutShell from "../components/LayoutShell";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
-  title: "FoundIt - Heritage Lost & Found Ledger",
-  description: "Institutional lost and found community network.",
+  title: "FoundIt - Lost & Found Recovery",
+  description: "Community-driven lost and found platform.",
+  icons: {
+    icon: "/lostfound.png",
+  },
 };
 
 export default function RootLayout({ children }) {
