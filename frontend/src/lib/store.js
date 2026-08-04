@@ -35,20 +35,28 @@ const useStore = create((set, get) => ({
     }
   },
   fetchUser: async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/auth/me', {
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        set({ user: null });
-        return;
-      }
-      const data = await res.json();
-      set({ user: data.user });
-    } catch {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      credentials: "include",
+    });
+
+    console.log("ME status:", res.status);
+
+    if (!res.ok) {
+      console.log("Not authenticated");
       set({ user: null });
+      return;
     }
-  },
+
+    const data = await res.json();
+    console.log("Current user:", data);
+
+    set({ user: data.user });
+  } catch (err) {
+    console.error(err);
+    set({ user: null });
+  }
+},
 
  
   myItems: [],

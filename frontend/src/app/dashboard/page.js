@@ -27,7 +27,7 @@ export default function DashboardPage() {
     setLoading(true);
     setError("");
     try {
-      let url = "http://localhost:5000/api/items?status=active";
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active`;
       if (typeFilter !== "all") url += `&type=${typeFilter}`;
       const res = await fetch(url, { credentials: "include" });
       if (res.status === 401) { router.push("/"); return; }

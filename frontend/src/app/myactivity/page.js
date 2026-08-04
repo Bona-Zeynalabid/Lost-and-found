@@ -18,7 +18,7 @@ export default function ActivityPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/items?status=active", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active`, {
         credentials: "include",
       });
       if (res.status === 401) {
@@ -47,7 +47,7 @@ export default function ActivityPage() {
 
     setDeletingId(itemId);
     try {
-      const res = await fetch(`http://localhost:5000/api/items/${itemId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items/${itemId}`, {
         method: "DELETE",
         credentials: "include",
       });

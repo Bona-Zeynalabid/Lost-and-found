@@ -17,7 +17,7 @@ export default function NotificationsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/notifications", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
         credentials: "include",
       });
       if (res.status === 401) {
@@ -40,7 +40,7 @@ export default function NotificationsPage() {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch("http://localhost:5000/api/notifications/read-all", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/read-all`, {
         method: "PATCH",
         credentials: "include",
       });

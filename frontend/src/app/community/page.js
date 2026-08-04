@@ -23,7 +23,7 @@ export default function CommunityPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/community/posts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/community/posts`, {
         credentials: "include",
       });
       if (res.status === 401) {
@@ -50,7 +50,7 @@ export default function CommunityPage() {
     setPublishing(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/community/posts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/community/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,7 +75,7 @@ export default function CommunityPage() {
   const handleDeletePost = async (postId) => {
     if (!confirm("Delete this post and all its replies?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/community/posts/${postId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/community/posts/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -101,7 +101,7 @@ export default function CommunityPage() {
   const handleDeleteReply = async (replyId, postId) => {
     if (!confirm("Delete this reply?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/community/replies/${replyId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/community/replies/${replyId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -130,7 +130,7 @@ export default function CommunityPage() {
   const handleLikePost = async (postId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/posts/${postId}/like`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/community/posts/${postId}/like`,
         { method: "POST", credentials: "include" }
       );
       if (res.status === 401) {
@@ -155,7 +155,7 @@ export default function CommunityPage() {
   const fetchReplies = async (postId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/posts/${postId}/replies`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/community/posts/${postId}/replies`,
         { credentials: "include" }
       );
       if (res.status === 401) {
@@ -184,7 +184,7 @@ export default function CommunityPage() {
   const handleLikeReply = async (replyId, postId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/replies/${replyId}/like`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/community/replies/${replyId}/like`,
         { method: "POST", credentials: "include" }
       );
       if (res.status === 401) {
@@ -216,7 +216,7 @@ export default function CommunityPage() {
     if (!content) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/posts/${postId}/replies`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/community/posts/${postId}/replies`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

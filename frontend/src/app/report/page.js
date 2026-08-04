@@ -87,7 +87,7 @@ export default function ReportPage() {
     imageFiles.forEach((file) => formData.append("files", file));
 
     try {
-      const res = await fetch("http://localhost:5000/api/upload/multiple", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/multiple`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -132,7 +132,7 @@ export default function ReportPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/items", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

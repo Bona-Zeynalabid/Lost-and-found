@@ -16,7 +16,7 @@ export default function RightSidebar() {
   useEffect(() => {
     if (!user) return;
 
-    fetch("http://localhost:5000/api/items/stats", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items/stats`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (!data.error) {
@@ -29,7 +29,7 @@ export default function RightSidebar() {
       })
       .catch(() => {});
 
-    fetch("http://localhost:5000/api/notifications", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (data.notifications) {

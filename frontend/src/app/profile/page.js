@@ -27,7 +27,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const statsRes = await fetch("http://localhost:5000/api/items/stats", {
+        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items/stats`, {
           credentials: "include",
         });
         if (statsRes.status === 401) { router.push("/"); return; }
@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:5000/api/auth/logout", { method: "POST", credentials: "include" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
     } catch (err) { console.error("Logout error:", err); }
     logout();
     router.replace("/");
@@ -62,7 +62,7 @@ export default function ProfilePage() {
     if (newPassword.length < 6) { setPasswordError("Password must be at least 6 characters"); return; }
     setPasswordLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/update-password", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/update-password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -86,7 +86,7 @@ export default function ProfilePage() {
     if (!confirm("Disconnect from Telegram notifications?")) return;
     setTelegramDisconnecting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/disconnect-telegram", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/disconnect-telegram`, {
         method: "PUT",
         credentials: "include",
       });
