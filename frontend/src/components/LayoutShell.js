@@ -72,7 +72,7 @@ export default function LayoutShell({ children }) {
     return (
       <>
         <Header />
-        <main className="flex-1 p-3 sm:p-8 pb-24 sm:pb-8 max-w-full overflow-x-hidden">
+        <main className="flex-1 p-3 sm:p-8 pb-24 sm:pb-8 min-w-0 max-w-full overflow-x-hidden">
           {children}
         </main>
       </>
