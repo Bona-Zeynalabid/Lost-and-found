@@ -142,7 +142,7 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <section className="border-b border-[var(--border-color)] pb-4">
         <h2 className="font-serif-heading text-2xl sm:text-3xl font-normal mb-1">Member Profile</h2>
-        <p className="text-xs text-[var(--text-secondary)] tracking-wide">Manage your credentials and view your activity.</p>
+        <p className="text-xs text-[var(--text-secondary)] tracking-wide">Manage your credentials.</p>
       </section>
 
       {success && (

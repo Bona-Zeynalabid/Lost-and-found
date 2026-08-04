@@ -4,7 +4,7 @@ const LostFound = require('../models/LostFound');
 const { protect } = require('../middleware/auth');
 const { findMatches } = require('../utils/matching');
 const Notification = require('../models/Notification');
-const clienturl = process.env.CLIENT_URL
+const clienturl = process.env.UURL
 
 router.use(protect);
 
@@ -64,57 +64,76 @@ router.post('/', async (req, res) => {
 
     // Run matching after creating the item
     try {
-      const matches = await findMatches(item, LostFound, Notification);
+  const matches = await findMatches(item, LostFound, Notification);
 
-      if (matches.length > 0) {
-        const notifications = [];
+  if (matches.length > 0) {
+    const notifications = [];
 
-        for (const match of matches) {
-          notifications.push({
-            user: item.user,
-            message: `We found a potential ${match.item.type} item that may match your ${item.type} item: "${match.item.title}" (${match.score}% match)`,
-            ownItem: item._id,
-            matchedItem: match.item._id,
-            matchedItemType: match.item.type,
-          });
+    for (const match of matches) {
+      notifications.push({
+        user: item.user,
+        message: `We found a potential ${match.item.type} item that may match your ${item.type} item: "${match.item.title}" (${match.score}% match)`,
+        ownItem: item._id,
+        matchedItem: match.item._id,
+        matchedItemType: match.item.type,
+      });
 
-          notifications.push({
-            user: match.item.user._id,
-            message: `Your ${match.item.type} item "${match.item.title}" may match a recently posted ${item.type} item: "${item.title}" (${match.score}% match)`,
-            ownItem: match.item._id,
-            matchedItem: item._id,
-            matchedItemType: item.type,
-          });
-        }
-
-        await Notification.insertMany(notifications);
-
-        // Send Telegram notifications with inline keyboard
-        const { sendTelegramNotification } = require('../config/telegramBot');
-
-        for (const match of matches) {
-          const newOwnerMsg = `<b>🔔 Match Found!</b>\n\nWe found a potential <b>${match.item.type}</b> item that may match your <b>${item.type}</b> item.\n\n<b>Your item:</b> ${item.title}\n<b>Matched item:</b> ${match.item.title}\n<b>Match score:</b> ${match.score}%`;
-
-          await sendTelegramNotification(item.user.toString(), newOwnerMsg, {
-            inline_keyboard: [
-              [{ text: '🔍 View on FoundIt', url: 'https://gemini.google.com/' }],
-            ],
-          });
-
-          const matchedOwnerMsg = `<b>🔔 Match Found!</b>\n\nYour <b>${match.item.type}</b> item "<b>${match.item.title}</b>" may match a recently posted <b>${item.type}</b> item.\n\n<b>New item:</b> ${item.title}\n<b>Match score:</b> ${match.score}%`;
-
-          await sendTelegramNotification(match.item.user._id.toString(), matchedOwnerMsg, {
-            inline_keyboard: [
-              [{ text: '🔍 View on FoundIt', url: 'https://gemini.google.com/' }],
-            ],
-          });
-        }
-      }
-    } catch (matchError) {
-      console.error('Matching process error:', matchError);
+      notifications.push({
+        user: match.item.user._id,
+        message: `Your ${match.item.type} item "${match.item.title}" may match a recently posted ${item.type} item: "${item.title}" (${match.score}% match)`,
+        ownItem: match.item._id,
+        matchedItem: item._id,
+        matchedItemType: item.type,
+      });
     }
 
-    res.status(201).json(item);
+    await Notification.insertMany(notifications);
+
+    const { sendTelegramNotification } = require('../config/telegramBot');
+
+    for (const match of matches) {
+      const yourInfo = [];
+      if (item.category) yourInfo.push(`Category: ${item.category}`);
+      if (item.location?.address) yourInfo.push(`Address: ${item.location.address}`);
+      if (item.location?.city) yourInfo.push(`City: ${item.location.city}`);
+      if (item.dateOccurred) yourInfo.push(`Date: ${new Date(item.dateOccurred).toLocaleDateString()}`);
+      if (item.description) yourInfo.push(`Description: ${item.description}`);
+      if (item.reward > 0) yourInfo.push(`Reward: $${item.reward}`);
+      if (item.contact?.phone) yourInfo.push(`Phone: ${item.contact.phone}`);
+      if (item.contact?.email) yourInfo.push(`Email: ${item.contact.email}`);
+
+      const matchInfo = [];
+      if (match.item.category) matchInfo.push(`Category: ${match.item.category}`);
+      if (match.item.location?.address) matchInfo.push(`Address: ${match.item.location.address}`);
+      if (match.item.location?.city) matchInfo.push(`City: ${match.item.location.city}`);
+      if (match.item.dateOccurred) matchInfo.push(`Date: ${new Date(match.item.dateOccurred).toLocaleDateString()}`);
+      if (match.item.description) matchInfo.push(`Description: ${match.item.description}`);
+      if (match.item.reward > 0) matchInfo.push(`Reward: $${match.item.reward}`);
+      if (match.item.contact?.phone) matchInfo.push(`Phone: ${match.item.contact.phone}`);
+      if (match.item.contact?.email) matchInfo.push(`Email: ${match.item.contact.email}`);
+
+      const newOwnerMsg = `<b>🔔 Match Found!</b>\n\nWe found a potential <b>${match.item.type}</b> item that may match your <b>${item.type}</b> item.\n\n<b>Your item:</b> ${item.title}\n${yourInfo.map(i => '• ' + i).join('\n')}\n\n<b>Matched item:</b> ${match.item.title}\n${matchInfo.map(i => '• ' + i).join('\n')}\n\n<b>Match score:</b> ${match.score}%`;
+
+      await sendTelegramNotification(item.user.toString(), newOwnerMsg, {
+        inline_keyboard: [
+          [{ text: '🔍 View on FoundIt', url: clienturl }],
+        ],
+      });
+
+      const matchedOwnerMsg = `<b>🔔 Match Found!</b>\n\nYour <b>${match.item.type}</b> item "<b>${match.item.title}</b>" may match a recently posted <b>${item.type}</b> item.\n\n<b>Your item:</b> ${match.item.title}\n${matchInfo.map(i => '• ' + i).join('\n')}\n\n<b>New item:</b> ${item.title}\n${yourInfo.map(i => '• ' + i).join('\n')}\n\n<b>Match score:</b> ${match.score}%`;
+
+      await sendTelegramNotification(match.item.user._id.toString(), matchedOwnerMsg, {
+        inline_keyboard: [
+          [{ text: '🔍 View on FoundIt', url: clienturl }],
+        ],
+      });
+    }
+  }
+} catch (matchError) {
+  console.error('Matching process error:', matchError);
+}
+
+res.status(201).json(item);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

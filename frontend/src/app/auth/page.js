@@ -14,39 +14,29 @@ export default function AuthPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
 
   const resetForm = () => {
     setEmail("");
     setPassword("");
-    setFirstName("");
-    setLastName("");
     setError("");
   };
 
-  const handleAuthSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const endpoint = authMode === "login" ? "/api/auth/login" : "/api/auth/register";
-    const body =
-      authMode === "login"
-        ? { email, password }
-        : { email, password, firstName, lastName };
-
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email, password }),
         credentials: "include",
       });
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      if (!res.ok) throw new Error(data.error || "Invalid credentials");
 
       setUser(data.user);
       resetForm();
@@ -59,56 +49,50 @@ export default function AuthPage() {
   };
 
   // Google login handler
- // Google login handler - FIXED
-const googleLogin = useGoogleLogin({
-  onSuccess: async (tokenResponse) => {
-    setGoogleLoading(true);
-    setError("");
-    try {
-      // Use tokenResponse.access_token to get user info, then verify on backend
-      // OR better: use the ID token directly
-      const res = await fetch("http://localhost:5000/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          accessToken: tokenResponse.access_token 
-        }),
-        credentials: "include",
-      });
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      setError("");
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            accessToken: tokenResponse.access_token 
+          }),
+          credentials: "include",
+        });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Google login failed");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Google login failed");
 
-      setUser(data.user);
-      router.push("/dashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setGoogleLoading(false);
-    }
-  },
-  onError: () => {
-    setError("Google login failed. Please try again.");
-  },
-});
+        setUser(data.user);
+        router.push("/dashboard");
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    onError: () => {
+      setError("Google login failed. Please try again.");
+    },
+  });
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        
+        {/* Header */}
         <div className="text-center space-y-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--accent-gold)] border border-[var(--accent-gold)] px-3 py-1 inline-block">
-            Established Civic Utility
-          </span>
+          
           <h1 className="font-serif-heading text-3xl font-normal">
             FoundIt
           </h1>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Access the institutional lost & found ledger
-          </p>
+          
         </div>
 
         <div className="glass-panel p-6 sm:p-8 border border-[var(--border-color)] bg-[var(--bg-main)] shadow-md space-y-6 rounded-xs">
-        
+          {/* Tabs */}
           <div className="flex border-b border-[var(--border-color)]">
             <button
               type="button"
@@ -130,11 +114,11 @@ const googleLogin = useGoogleLogin({
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
-              Register Record
+              Register
             </button>
           </div>
 
-          
+          {/* Google Login - Always visible */}
           <button
             type="button"
             onClick={() => googleLogin()}
@@ -147,52 +131,83 @@ const googleLogin = useGoogleLogin({
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
-            <span>{googleLoading ? "Connecting..." : "Continue with Google"}</span>
+            <span>{googleLoading ? "Connecting..." : authMode === "register" ? "Sign up with Google" : "Continue with Google"}</span>
           </button>
 
-          <div className="flex items-center space-x-2 text-[10px] text-[var(--text-secondary)] uppercase tracking-widest">
-            <div className="flex-1 h-px bg-[var(--border-color)]"></div>
-            <span>or Email Credentials</span>
-            <div className="flex-1 h-px bg-[var(--border-color)]"></div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleAuthSubmit} className="space-y-4">
-            {authMode === "register" && (
-              <>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">First Name</label>
-                  <input type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">Last Name (optional)</label>
-                  <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">Email</label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="member@domain.edu" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
+          {/* Register Notice */}
+          {authMode === "register" && (
+            <div className="p-4 border border-[var(--accent-gold)]/30 bg-[var(--accent-gold)]/5 rounded-xs text-center space-y-2">
+              <svg className="w-6 h-6 mx-auto text-[var(--accent-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-[var(--text-primary)] font-semibold">
+                Email registration is currently unavailable
+              </p>
+              <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+                Please use <strong className="text-[var(--text-primary)]">Google</strong> to create your account. 
+                After signing up, you can set a password in your Profile Settings and use email login thereafter.
+              </p>
             </div>
+          )}
 
-            <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">Password</label>
-              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
+          {/* Divider - only for login */}
+          {authMode === "login" && (
+            <div className="flex items-center space-x-2 text-[10px] text-[var(--text-secondary)] uppercase tracking-widest">
+              <div className="flex-1 h-px bg-[var(--border-color)]"></div>
+              <span>or Email Credentials</span>
+              <div className="flex-1 h-px bg-[var(--border-color)]"></div>
             </div>
+          )}
 
-            {error && (
-              <p className="text-xs text-red-600 border border-red-200 bg-red-50 p-2">{error}</p>
-            )}
+          {/* Login Form */}
+          {authMode === "login" && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">Email</label>
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="member@domain.edu" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[var(--accent-green)] text-white text-xs uppercase tracking-widest font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {loading ? "Processing..." : authMode === "login" ? "Authorize & Enter" : "Complete Registration"}
-            </button>
-          </form>
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)] mb-1">Password</label>
+                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)]" />
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-600 border border-red-200 bg-red-50 p-2">{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-[var(--accent-green)] text-white text-xs uppercase tracking-widest font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading ? "Processing..." : "Authorize & Enter"}
+              </button>
+            </form>
+          )}
+
+          {/* Register Info */}
+          {authMode === "register" && (
+            <div className="text-center space-y-3">
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+                How it works
+              </p>
+              <div className="space-y-2 text-left">
+                <div className="flex gap-2 text-xs text-[var(--text-secondary)]">
+                  <span className="w-5 h-5 rounded-full bg-[var(--accent-green)] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                  <span>Sign up using your <strong className="text-[var(--text-primary)]">Google account</strong> above</span>
+                </div>
+                <div className="flex gap-2 text-xs text-[var(--text-secondary)]">
+                  <span className="w-5 h-5 rounded-full bg-[var(--accent-green)] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                  <span>Go to your <strong className="text-[var(--text-primary)]">Profile</strong> and set a password</span>
+                </div>
+                <div className="flex gap-2 text-xs text-[var(--text-secondary)]">
+                  <span className="w-5 h-5 rounded-full bg-[var(--accent-green)] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                  <span>Use your <strong className="text-[var(--text-primary)]">email & password</strong> to sign in anytime</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

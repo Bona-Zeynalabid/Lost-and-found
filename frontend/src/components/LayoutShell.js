@@ -11,7 +11,6 @@ export default function LayoutShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   
-  // Pages that don't require authentication
   const isPublicPage = pathname === "/" || pathname === "/auth";
 
   const initTheme = useStore((s) => s.initTheme);
@@ -32,27 +31,43 @@ export default function LayoutShell({ children }) {
     checkAuth();
   }, [fetchUser]);
 
-  // Redirect unauthenticated users to landing page
   useEffect(() => {
+    // Redirect unauthenticated users from protected pages
     if (authChecked && !user && !isPublicPage) {
       router.push("/");
     }
-    // If user is logged in and on landing page, redirect to dashboard
-    if (authChecked && user && pathname === "/") {
+    // Redirect authenticated users away from landing/auth pages
+    if (authChecked && user && isPublicPage) {
       router.push("/dashboard");
     }
   }, [authChecked, user, pathname, isPublicPage, router]);
 
-  // Show nothing while checking auth
   if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xs text-[var(--text-secondary)]">Loading…</p>
+        <div className="flex gap-1.5">
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        </div>
       </div>
     );
   }
 
-  // On public pages, show without navigation
+  // If user is logged in and on public page, show nothing while redirecting
+  if (isPublicPage && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex gap-1.5">
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        </div>
+      </div>
+    );
+  }
+
+  // Public pages for unauthenticated users
   if (isPublicPage) {
     return (
       <>
@@ -64,7 +79,7 @@ export default function LayoutShell({ children }) {
     );
   }
 
-  // On protected pages, show full layout with navigation
+  // Protected pages for authenticated users
   return (
     <>
       <Header />

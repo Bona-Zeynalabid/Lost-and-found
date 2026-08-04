@@ -1,65 +1,58 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AssistantPopup from "@/components/AssistantPopup";
 
 export default function LandingPage() {
   const router = useRouter();
+  const [showAssistant, setShowAssistant] = useState(false);
 
   return (
-    <div className="space-y-12 py-4 sm:py-8">
-    
-      <section className="text-center space-y-4 max-w-2xl mx-auto px-2">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--accent-gold)] border border-[var(--accent-gold)] px-3 py-1 inline-block">
-          Established Civic Utility
-        </span>
+    <div className="min-h-screen flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4">
+        <section className="text-center space-y-6 max-w-2xl mx-auto">
+          <h1 className="font-serif-heading text-4xl sm:text-6xl font-normal leading-tight text-[var(--text-primary)]">
+            Lost Something?<br />We'll Help You Find It.
+          </h1>
 
-        <h1 className="font-serif-heading text-3xl sm:text-5xl font-normal leading-tight">
-          The Institutional Standard for Lost & Found Recovery
-        </h1>
+          <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-lg mx-auto">
+            FoundIt connects communities through a trusted platform where lost items find their way back home.
+          </p>
 
-        <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed max-w-xl mx-auto">
-          FoundIt provides a structured, high-trust digital ledger for returning
-          lost personal property within institutional communities.
-        </p>
+          <div className="pt-4">
+            <button
+              onClick={() => router.push("/auth")}
+              className="px-8 py-3.5 bg-[var(--accent-green)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-sm"
+            >
+              Get Started
+            </button>
+          </div>
+        </section>
+      </div>
 
-        <div className="pt-4">
-          <button
-            onClick={() => router.push("/auth")}
-            className="px-8 py-3 bg-[var(--accent-green)] text-white text-xs uppercase tracking-widest hover:opacity-90 transition-all font-semibold rounded-xs shadow-xs"
-          >
-            Get Started / Access Ledger
-          </button>
-        </div>
-      </section>
-
-      {/* Value Pillars */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-b border-[var(--border-color)] py-8">
-        <div className="p-4 space-y-2">
-          <span className="font-serif-heading text-sm font-semibold text-[var(--accent-gold)]">
-            I. Structured Registry
-          </span>
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            Every reported article is cataloged with strict case verification tags.
+      {/* Footer */}
+      <footer className="border-t border-[var(--border-color)] py-6 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs text-[var(--text-secondary)]">
+            © 2026 FoundIt. Built by Bona Zeynalabid
           </p>
         </div>
+      </footer>
 
-        <div className="p-4 space-y-2 sm:border-l sm:border-[var(--border-color)]">
-          <span className="font-serif-heading text-sm font-semibold text-[var(--accent-gold)]">
-            II. Privacy Assurance
-          </span>
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            Direct messaging occurs strictly through authorized case numbers.
-          </p>
-        </div>
+      {/* Floating Assistant Button */}
+      <button
+        onClick={() => setShowAssistant(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-[var(--accent-green)] text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all z-40 flex items-center justify-center"
+        aria-label="Open assistant"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </button>
 
-        <div className="p-4 space-y-2 sm:border-l sm:border-[var(--border-color)]">
-          <span className="font-serif-heading text-sm font-semibold text-[var(--accent-gold)]">
-            III. Rapid Match Network
-          </span>
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            Algorithmic location cross-referencing to return property swiftly.
-          </p>
-        </div>
-      </section>
+      {/* Assistant Popup */}
+      {showAssistant && <AssistantPopup onClose={() => setShowAssistant(false)} />}
     </div>
   );
 }

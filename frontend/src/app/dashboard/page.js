@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import useStore from "@/lib/store";
 import ItemCard from "@/components/ItemCard";
+import ContentLoader from "@/components/ContentLoader";
 
 const categories = [
   "All", "Phone", "Laptop", "ID", "Wallet", "Keys",
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+  
 
   const fetchItems = async () => {
     setLoading(true);
@@ -95,6 +97,10 @@ export default function DashboardPage() {
 
   const hasActiveFilters = typeFilter !== "all" || categoryFilter !== "All" || searchQuery.trim() !== "";
 
+  if (loading) {
+    return <ContentLoader />;
+  } 
+  
   return (
     <div className="space-y-6">
       {/* Search & Filters */}
