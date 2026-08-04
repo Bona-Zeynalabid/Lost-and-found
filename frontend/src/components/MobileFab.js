@@ -1,8 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function MobileFab() {
   const router = useRouter();
+    const pathname = usePathname();
+   if (pathname === "/report") return null;
 
   return (
     <div className="fixed bottom-33 right-4 z-40 lg:hidden flex flex-col items-end space-y-2">
