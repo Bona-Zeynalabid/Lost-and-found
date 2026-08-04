@@ -78,82 +78,81 @@ export default function AssistantPopup({ onClose }) {
     setMessages((prev) => [...prev, { role: "assistant", text }]);
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+ const handleSend = async () => {
+  if (!input.trim() || loading) return;
 
-    const userMessage = input.trim();
-    setInput("");
+  const userMessage = input.trim();
+  setInput("");
 
-    // Add user message
-    setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
+  const newMessages = [...messages, { role: "user", text: userMessage }];
+  setMessages(newMessages);
 
-    // Add empty assistant placeholder
-    setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
+  setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const apiMessages = [
-        { role: "system", content: SYSTEM_PROMPT },
-        ...messages
-          .filter((m) => m.text) // skip empty loading messages
-          .map((msg) => ({
-            role: msg.role,
-            content: msg.text,
-          })),
-        { role: "user", content: userMessage },
-      ];
+  try {
+    // Check if API key is set
+    if (!process.env.NEXT_PUBLIC_OPENROUTER_API_KEY) {
+      throw new Error("Assistant is not configured. Please add your OpenRouter API key.");
+    }
 
-      const stream = await openrouter.chat.send({
-        chatRequest: {
-          model: "openrouter/free",
-          messages: apiMessages,
-          stream: true,
-        },
-      });
+    const apiMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...newMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.text,
+      })),
+    ];
 
-      let fullResponse = "";
+    const stream = await openrouter.chat.send({
+      chatRequest: {
+        model: "openrouter/free",
+        messages: apiMessages,
+        stream: true,
+      },
+    });
 
-      for await (const chunk of stream) {
-        const content = chunk.choices?.[0]?.delta?.content;
-        if (content) {
-          fullResponse += content;
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: "assistant", text: fullResponse };
-            return updated;
-          });
-        }
-      }
+    let fullResponse = "";
 
-      // If stream ended with empty response
-      if (!fullResponse) {
+    for await (const chunk of stream) {
+      const content = chunk.choices?.[0]?.delta?.content;
+      if (content) {
+        fullResponse += content;
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: "assistant", text: getRandomFallback() };
+          updated[updated.length - 1] = { role: "assistant", text: fullResponse };
           return updated;
         });
       }
-    } catch (err) {
-      // Replace the empty placeholder with a friendly fallback message
+    }
+
+    if (!fullResponse) {
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = {
-          role: "assistant",
-          text: getRandomFallback(),
-        };
+        updated[updated.length - 1] = { role: "assistant", text: "I received an empty response. Please try again." };
         return updated;
       });
-
-      // Only log in development
-      if (process.env.NODE_ENV === "development") {
-        console.error("Assistant error:", err.message);
-      }
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    // Show user-friendly message
+    let errorMessage = "I'm having trouble connecting. Please try again later.";
+    
+    if (err.message?.includes("not configured")) {
+      errorMessage = "Assistant is not configured yet. Please add your OpenRouter API key.";
+    } else if (err.message?.includes("User not found")) {
+      errorMessage = "Authentication error. Please check your API key.";
+    }
 
+    setMessages((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1] = { role: "assistant", text: errorMessage };
+      return updated;
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();

@@ -1,6 +1,6 @@
 export default function AboutPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8 max-w-full overflow-hidden break-words">
       
       <section className="border-b border-[var(--border-color)] pb-4">
         <h2 className="font-serif-heading text-2xl sm:text-3xl font-normal mb-1">

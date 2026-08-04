@@ -183,4 +183,18 @@
 select {
   color-scheme: light dark;
 }
+
+@media (max-width: 380px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .glass-panel {
+    padding: 0.75rem !important;
+  }
+  
+  h1, h2, h3 {
+    word-break: break-word;
+  }
+}
 }

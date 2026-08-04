@@ -126,7 +126,7 @@ export default function ProfilePage() {
   const isTelegramConnected = storeUser.telegramConnected;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       {/* Success message */}
       {success && (
         <div className="p-3 border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 text-xs text-green-700 dark:text-green-400 rounded-lg">{success}</div>
