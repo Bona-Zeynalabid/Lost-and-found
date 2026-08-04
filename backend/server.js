@@ -56,7 +56,7 @@ mongoose
     app.use(
       cors({
         credentials: true,
-        origin: process.env.CLIENT_URL || 'http://localhost:3000',
+        origin: 'https://lost-and-found-ruddy-rho.vercel.app/' || 'http://localhost:3000',
       })
     );
     app.use(express.json({ limit: '10mb' }));
