@@ -29,7 +29,7 @@ export default function RightSidebar() {
       })
       .catch(() => {});
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notification`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (data.notifications) {
