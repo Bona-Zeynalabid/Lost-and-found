@@ -415,73 +415,139 @@ export default function PolicePortal() {
     }
   };
 
-  // Dynamic category fields (same as user report page)
+  // Complete dynamic category fields (same as user report page)
   const renderCategoryFields = () => {
     const inputClass =
       "w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)] transition-colors";
     const labelClass =
       "block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1";
     const { category, details } = itemForm;
+
     switch (category) {
       case "Phone":
         return (
           <div className="space-y-3">
+            <div><label className={labelClass}>Brand <span className="text-red-500">*</span></label><input type="text" placeholder="Apple, Samsung, etc." value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Model <span className="text-red-500">*</span></label><input type="text" placeholder="iPhone 13, Galaxy S22, etc." value={details.model} onChange={(e) => handleDetailChange("model", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Color</label><input type="text" placeholder="Blue, Black, etc." value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>IMEI</label><input type="text" placeholder="15-digit IMEI number" value={details.imei} onChange={(e) => handleDetailChange("imei", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Laptop":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Brand <span className="text-red-500">*</span></label><input type="text" placeholder="Dell, Apple, HP, etc." value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Model <span className="text-red-500">*</span></label><input type="text" placeholder="XPS 15, MacBook Pro, etc." value={details.model} onChange={(e) => handleDetailChange("model", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Serial Number</label><input type="text" placeholder="Found on the bottom" value={details.serialNumber} onChange={(e) => handleDetailChange("serialNumber", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Color</label><input type="text" placeholder="Silver, Space Gray" value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "ID":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" placeholder="As it appears on the document" value={details.fullName} onChange={(e) => handleDetailChange("fullName", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>ID Number <span className="text-red-500">*</span></label><input type="text" placeholder="The identification number" value={details.idNumber} onChange={(e) => handleDetailChange("idNumber", e.target.value)} className={inputClass} required /></div>
             <div>
-              <label className={labelClass}>Brand *</label>
-              <input
-                type="text"
-                value={details.brand}
-                onChange={(e) => handleDetailChange("brand", e.target.value)}
-                className={inputClass}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Model *</label>
-              <input
-                type="text"
-                value={details.model}
-                onChange={(e) => handleDetailChange("model", e.target.value)}
-                className={inputClass}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Color</label>
-              <input
-                type="text"
-                value={details.color}
-                onChange={(e) => handleDetailChange("color", e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>IMEI</label>
-              <input
-                type="text"
-                value={details.imei}
-                onChange={(e) => handleDetailChange("imei", e.target.value)}
-                className={inputClass}
-              />
+              <label className={labelClass}>ID Type</label>
+              <select value={details.idType} onChange={(e) => handleDetailChange("idType", e.target.value)} className={inputClass}>
+                <option value="">Select type</option>
+                <option value="passport">Passport</option>
+                <option value="drivers_license">Driver's License</option>
+                <option value="national_id">National ID</option>
+                <option value="student_id">Student ID</option>
+                <option value="other">Other</option>
+              </select>
             </div>
           </div>
         );
-      // ... other cases (Laptop, ID, Keys, Wallet, Bag, Jewelry, Clothing, Pet, Electronics, Documents, Other)
-      default:
+
+      case "Keys":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Number of Keys <span className="text-red-500">*</span></label><input type="number" placeholder="How many keys?" value={details.numberOfKeys} onChange={(e) => handleDetailChange("numberOfKeys", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Distinguishing Feature</label><input type="text" placeholder="Keychain, color, unique charm" value={details.keyIdentifier} onChange={(e) => handleDetailChange("keyIdentifier", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Wallet":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Color <span className="text-red-500">*</span></label><input type="text" placeholder="Brown, Black, etc." value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Brand</label><input type="text" placeholder="If known" value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Material</label><input type="text" placeholder="Leather, fabric" value={details.material} onChange={(e) => handleDetailChange("material", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Bag":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Color <span className="text-red-500">*</span></label><input type="text" placeholder="Black, Blue" value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Brand</label><input type="text" placeholder="If known" value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Material</label><input type="text" placeholder="Canvas, leather" value={details.material} onChange={(e) => handleDetailChange("material", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Size</label><input type="text" placeholder="Small, medium, backpack" value={details.size} onChange={(e) => handleDetailChange("size", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Jewelry":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Type <span className="text-red-500">*</span></label><input type="text" placeholder="Ring, necklace, bracelet" value={details.deviceType} onChange={(e) => handleDetailChange("deviceType", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Material <span className="text-red-500">*</span></label><input type="text" placeholder="Gold, silver" value={details.material} onChange={(e) => handleDetailChange("material", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Description</label><textarea rows={2} placeholder="Engravings, stones, unique features" value={details.otherDescription} onChange={(e) => handleDetailChange("otherDescription", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Clothing":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Type <span className="text-red-500">*</span></label><input type="text" placeholder="Jacket, shoes, scarf" value={details.clothingType} onChange={(e) => handleDetailChange("clothingType", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Size</label><input type="text" placeholder="M, L, 42" value={details.clothingSize} onChange={(e) => handleDetailChange("clothingSize", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Color <span className="text-red-500">*</span></label><input type="text" placeholder="Blue, Red" value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Brand</label><input type="text" placeholder="If known" value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Pet":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Species <span className="text-red-500">*</span></label><input type="text" placeholder="Dog, cat, bird" value={details.species} onChange={(e) => handleDetailChange("species", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Breed</label><input type="text" placeholder="Labrador, Persian" value={details.breed} onChange={(e) => handleDetailChange("breed", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Color</label><input type="text" placeholder="Golden, black, white" value={details.color} onChange={(e) => handleDetailChange("color", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Name</label><input type="text" placeholder="Pet's name" value={details.petName} onChange={(e) => handleDetailChange("petName", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Electronics":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Device Type <span className="text-red-500">*</span></label><input type="text" placeholder="Camera, tablet, headphones" value={details.deviceType} onChange={(e) => handleDetailChange("deviceType", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Brand <span className="text-red-500">*</span></label><input type="text" placeholder="Sony, Apple, Bose" value={details.brand} onChange={(e) => handleDetailChange("brand", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Model</label><input type="text" placeholder="Model name or number" value={details.model} onChange={(e) => handleDetailChange("model", e.target.value)} className={inputClass} /></div>
+            <div><label className={labelClass}>Serial Number</label><input type="text" placeholder="If available" value={details.serialNumber} onChange={(e) => handleDetailChange("serialNumber", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Documents":
+        return (
+          <div className="space-y-3">
+            <div><label className={labelClass}>Document Type <span className="text-red-500">*</span></label><input type="text" placeholder="Passport, certificate, contract" value={details.documentType} onChange={(e) => handleDetailChange("documentType", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Name on Document <span className="text-red-500">*</span></label><input type="text" placeholder="Full name as it appears" value={details.nameOnDocument} onChange={(e) => handleDetailChange("nameOnDocument", e.target.value)} className={inputClass} required /></div>
+            <div><label className={labelClass}>Issuer</label><input type="text" placeholder="Government, university, bank" value={details.issuer} onChange={(e) => handleDetailChange("issuer", e.target.value)} className={inputClass} /></div>
+          </div>
+        );
+
+      case "Other":
         return (
           <div>
-            <label className={labelClass}>Description *</label>
-            <textarea
-              rows={3}
-              value={details.otherDescription}
-              onChange={(e) =>
-                handleDetailChange("otherDescription", e.target.value)
-              }
-              className={inputClass}
-              required
-            />
+            <label className={labelClass}>Description <span className="text-red-500">*</span></label>
+            <textarea rows={3} placeholder="Brand, color, size, unique markings" value={details.otherDescription} onChange={(e) => handleDetailChange("otherDescription", e.target.value)} className={inputClass} required />
           </div>
         );
+
+      default:
+        return null;
     }
   };
 
@@ -935,7 +1001,7 @@ export default function PolicePortal() {
                       onChange={(e) =>
                         setItemForm({ ...itemForm, dateFound: e.target.value })
                       }
-                      className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)] rounded"
+                      className="w-full bg-transparent border border-[var(--border-color)] p-2.5 text-xs focus:outline-none focus:border-[var(--accent-gold)] rounded dark:[color-scheme:dark]"
                       required
                     />
                   </div>

@@ -73,8 +73,8 @@ router.post('/admin/login', async (req, res) => {
     const token = signToken({ email, role: 'admin' });
    res.cookie('adminToken', token, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: true,
+  sameSite:'none',
   path: '/',
   maxAge: 24 * 60 * 60 * 1000,
 });
@@ -86,7 +86,12 @@ router.post('/admin/login', async (req, res) => {
 });
 
 router.post('/admin/logout', (req, res) => {
-  res.cookie('adminToken', '', { maxAge: 0 });
+  res.cookie('adminToken', '', {  httpOnly: true,
+    secure: true,        
+    sameSite: 'none',    
+    path: '/',            
+    maxAge: 0,
+ });
   res.json({ success: true });
 });
 
@@ -109,8 +114,8 @@ router.post('/station/login', async (req, res) => {
     const token = signToken({ id: station._id, email: station.email, role: 'station' });
    res.cookie('stationToken', token, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: true,
+  sameSite: 'none',
   path: '/',
   maxAge: 24 * 60 * 60 * 1000,
 });
@@ -122,7 +127,11 @@ router.post('/station/login', async (req, res) => {
 });
 
 router.post('/station/logout', (req, res) => {
-  res.cookie('stationToken', '', { maxAge: 0 });
+  res.cookie('stationToken', '', {  httpOnly: true,
+    secure: true,        
+    sameSite: 'none',    
+    path: '/',            
+    maxAge: 0, });
   res.json({ success: true });
 });
 
