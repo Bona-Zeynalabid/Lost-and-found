@@ -243,6 +243,19 @@ router.post('/station/items', stationProtect, async (req, res) => {
   }
 });
 
+
+router.get('/public/items', async (req, res) => {
+  try {
+    const items = await PoliceFoundItem.find({ status: 'active' })
+      .populate('station', 'name imageUrl phone address city latitude longitude')
+      .sort({ createdAt: -1 });
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.patch('/station/items/:id', stationProtect, async (req, res) => {
   try {
     const item = await PoliceFoundItem.findOne({ _id: req.params.id, station: req.station.id });

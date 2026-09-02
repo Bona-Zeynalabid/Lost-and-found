@@ -7,8 +7,8 @@ export default function ItemCard({ item, onClick, horizontal = false }) {
     locationText = item.location.address || item.location.city || "";
   }
 
-  const formattedDate = item.dateOccurred
-    ? new Date(item.dateOccurred).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  const formattedDate = item.dateOccurred || item.dateFound
+    ? new Date(item.dateOccurred || item.dateFound).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "";
 
   return (
@@ -25,20 +25,26 @@ export default function ItemCard({ item, onClick, horizontal = false }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--text-tertiary)] text-xs">No Image</div>
         )}
+        {/* Type badge */}
+        <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+          item.isPolice ? "bg-blue-500 text-white" : item.type === "lost" ? "bg-red-500 text-white" : "bg-green-500 text-white"
+        }`}>
+          {item.isPolice ? "Police" : item.type}
+        </span>
       </div>
 
       {/* Content */}
       <div className={`${horizontal ? "flex-1" : ""} p-3 flex flex-col justify-between`}>
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className={`text-xs font-semibold uppercase ${item.type === "lost" ? "text-[var(--accent-gold)]" : "text-[var(--accent-gold)]"}`}>
-              {item.type}
-            </span>
-            {hasReward && item.reward>0?<span className="text-xs font-bold text-[var(--accent-gold)]">${item.reward}</span>:<span></span>}
+            <h3 className="font-semibold text-sm text-[var(--text-primary)] line-clamp-1">{item.title}</h3>
+            {hasReward && <span className="text-xs font-bold text-[var(--accent-gold)]">${item.reward}</span>}
           </div>
-          <h3 className="font-semibold text-sm text-[var(--text-primary)] line-clamp-1">{item.title}</h3>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.category}</p>
           {locationText && <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{locationText}</p>}
+          {item.isPolice && item.station?.name && (
+            <p className="text-xs text-blue-500 mt-0.5 truncate">{item.station.name}</p>
+          )}
         </div>
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--border-color)]">
           <span className="text-[10px] text-[var(--text-secondary)]">{formattedDate}</span>

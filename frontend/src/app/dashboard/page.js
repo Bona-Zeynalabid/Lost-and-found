@@ -15,29 +15,49 @@ export default function DashboardPage() {
   const user = useStore((s) => s.user);
 
   const [items, setItems] = useState([]);
+  const [policeItems, setPoliceItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
-  
 
   const fetchItems = async () => {
     setLoading(true);
     setError("");
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active`;
-      if (typeFilter !== "all") url += `&type=${typeFilter}`;
-      const res = await fetch(url, { credentials: "include" });
-      if (res.status === 401) { router.push("/"); return; }
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load items");
-      const allItems = [
-        ...(data.myItems || []).map((item) => ({ ...item, owner: true })),
-        ...(data.communityItems || []).map((item) => ({ ...item, owner: false })),
-      ];
-      setItems(allItems);
+      const [normalRes, policeRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active${typeFilter !== "all" ? `&type=${typeFilter}` : ""}`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/police/public/items`),
+      ]);
+
+      let normalItems = [];
+      if (normalRes.ok) {
+        const data = await normalRes.json();
+        normalItems = [
+          ...(data.myItems || []).map((item) => ({ ...item, owner: true, isPolice: false })),
+          ...(data.communityItems || []).map((item) => ({ ...item, owner: false, isPolice: false })),
+        ];
+      } else if (normalRes.status === 401) {
+        router.push("/");
+        return;
+      }
+
+      let policeItems = [];
+      if (policeRes.ok) {
+        const data = await policeRes.json();
+        policeItems = (data.items || []).map((item) => ({
+          ...item,
+          isPolice: true,
+          type: "found",           // police always found
+          dateOccurred: item.dateFound, // ensure date field used for sorting/display
+          reward: 0,
+        }));
+      }
+
+      setItems(normalItems);
+      setPoliceItems(policeItems);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -47,12 +67,16 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchItems(); }, [typeFilter]);
 
+  // Merge normal and police items, then filter
   const filteredItems = useMemo(() => {
-    let result = [...items];
-    if (categoryFilter !== "All") result = result.filter((item) => item.category === categoryFilter);
+    let all = [...items, ...policeItems];
+
+    if (categoryFilter !== "All") {
+      all = all.filter((item) => item.category === categoryFilter);
+    }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      result = result.filter((item) => {
+      all = all.filter((item) => {
         const text = [
           item.title, item.description, item.category,
           item.location?.address, item.location?.city,
@@ -63,14 +87,21 @@ export default function DashboardPage() {
           item.details?.breed, item.details?.petName,
           item.details?.documentType, item.details?.nameOnDocument,
           item.details?.deviceType, item.details?.serialNumber,
+          item.station?.name, item.station?.city,
           ...(item.tags || []),
         ].filter(Boolean).join(" ").toLowerCase();
         return text.includes(query);
       });
     }
-    result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    return result;
-  }, [items, categoryFilter, searchQuery]);
+
+    all.sort((a, b) => {
+      const dateA = new Date(a.dateOccurred || a.dateFound || a.createdAt);
+      const dateB = new Date(b.dateOccurred || b.dateFound || b.createdAt);
+      return dateB - dateA;
+    });
+
+    return all;
+  }, [items, policeItems, categoryFilter, searchQuery]);
 
   const groupedItems = useMemo(() => {
     const groups = [];
@@ -99,8 +130,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return <ContentLoader />;
-  } 
-  
+  }
+
   return (
     <div className="space-y-6">
       {/* Search & Filters */}
@@ -181,13 +212,21 @@ export default function DashboardPage() {
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedItem(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[var(--bg-main)] rounded-2xl shadow-2xl p-6 z-10 border border-[var(--border-color)]" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedItem(null)} className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
+            {/* Police badge */}
+            {selectedItem.isPolice && (
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white mb-2">
+                Police Found Item
+              </span>
+            )}
+
+            {/* Images */}
             {selectedItem.images?.length > 0 && (
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {selectedItem.images.slice(0, 4).map((img, i) => (
@@ -198,62 +237,85 @@ export default function DashboardPage() {
 
             <div className="flex items-center gap-3 mb-3">
               <span className={`text-sm font-bold uppercase ${selectedItem.type === "lost" ? "text-red-600" : "text-green-600"}`}>{selectedItem.type}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.status}</span>
+              <span className="text-xs text-[var(--text-secondary)]">{selectedItem.status}</span>
               {selectedItem.owner && <span className="text-xs text-[var(--accent-gold)] font-semibold">Your Item</span>}
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedItem.title}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{selectedItem.category}</p>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">{selectedItem.title}</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{selectedItem.category}</p>
 
-            <hr className="my-4 border-gray-200 dark:border-gray-700" />
+            {/* Police station details */}
+            {selectedItem.isPolice && selectedItem.station && (
+              <div className="mt-4 p-4 border border-[var(--border-color)] rounded-lg space-y-2">
+                <div className="flex items-center gap-3">
+                  {selectedItem.station.imageUrl && (
+                    <img src={selectedItem.station.imageUrl} alt="Station" className="w-10 h-10 rounded-full object-cover" />
+                  )}
+                  <div>
+                    <p className="font-semibold text-sm">{selectedItem.station.name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{selectedItem.station.city}</p>
+                  </div>
+                </div>
+                {selectedItem.station.phone && (
+                  <p className="text-xs text-[var(--text-secondary)]">📞 {selectedItem.station.phone}</p>
+                )}
+                {selectedItem.station.address && (
+                  <p className="text-xs text-[var(--text-secondary)]">📍 {selectedItem.station.address}</p>
+                )}
+                {selectedItem.station.latitude && selectedItem.station.longitude && (
+                  <a
+                    href={`https://www.google.com/maps?q=${selectedItem.station.latitude},${selectedItem.station.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-500 underline"
+                  >
+                    Open in Maps
+                  </a>
+                )}
+              </div>
+            )}
+
+            <hr className="my-4 border-[var(--border-color)]" />
 
             <div className="space-y-3 text-sm">
               {selectedItem.description && (
                 <div>
-                  <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase mb-1">Description</p>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{selectedItem.description}</p>
+                  <p className="font-semibold text-[var(--text-secondary)] text-xs uppercase mb-1">Description</p>
+                  <p className="text-[var(--text-primary)] leading-relaxed">{selectedItem.description}</p>
                 </div>
               )}
 
-              <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Address</span><span className="text-gray-900 dark:text-white">{selectedItem.location?.address || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">City</span><span className="text-gray-900 dark:text-white">{selectedItem.location?.city || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Date</span><span className="text-gray-900 dark:text-white">{selectedItem.dateOccurred ? new Date(selectedItem.dateOccurred).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "-"}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Address</span><span className="text-[var(--text-primary)]">{selectedItem.location?.address || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">City</span><span className="text-[var(--text-primary)]">{selectedItem.location?.city || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Date</span><span className="text-[var(--text-primary)]">{selectedItem.dateOccurred ? new Date(selectedItem.dateOccurred).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "-"}</span></div>
 
-              <hr className="border-gray-200 dark:border-gray-700" />
-              <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase">Contact</p>
-              <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Phone</span><span className="text-gray-900 dark:text-white">{selectedItem.contact?.phone || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Email</span><span className="text-gray-900 dark:text-white">{selectedItem.contact?.email || "-"}</span></div>
+              <hr className="border-[var(--border-color)]" />
+              <p className="font-semibold text-[var(--text-secondary)] text-xs uppercase">Contact</p>
+              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Phone</span><span className="text-[var(--text-primary)]">{selectedItem.contact?.phone || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Email</span><span className="text-[var(--text-primary)]">{selectedItem.contact?.email || "-"}</span></div>
 
               {selectedItem.reward > 0 && (
-                <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">Reward</span><span className="text-green-600 font-bold">${selectedItem.reward}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Reward</span><span className="text-green-600 font-bold">${selectedItem.reward}</span></div>
               )}
 
               {selectedItem.details && Object.keys(selectedItem.details).filter(k => selectedItem.details[k]).length > 0 && (
                 <>
-                  <hr className="border-gray-200 dark:border-gray-700" />
-                  <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase">{selectedItem.category} Details</p>
+                  <hr className="border-[var(--border-color)]" />
+                  <p className="font-semibold text-[var(--text-secondary)] text-xs uppercase">{selectedItem.category} Details</p>
                   {Object.entries(selectedItem.details).map(([key, value]) => {
                     if (!value) return null;
                     return (
                       <div key={key} className="flex justify-between">
-                        <span className="text-gray-500 dark:text-gray-400 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                        <span className="text-gray-900 dark:text-white">{value}</span>
+                        <span className="text-[var(--text-secondary)] capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
+                        <span className="text-[var(--text-primary)]">{value}</span>
                       </div>
                     );
                   })}
                 </>
               )}
-
-              {selectedItem.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {selectedItem.tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-xs rounded-full">{tag}</span>
-                  ))}
-                </div>
-              )}
             </div>
 
-            <button onClick={() => setSelectedItem(null)} className="mt-6 w-full py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">Close</button>
+            <button onClick={() => setSelectedItem(null)} className="mt-6 w-full py-2.5 bg-[var(--border-color)] text-[var(--text-primary)] rounded-xl text-sm hover:bg-[var(--border-strong)] transition-colors">Close</button>
           </div>
         </div>
       )}
