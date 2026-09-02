@@ -6,6 +6,9 @@ const PoliceStation = require('../models/PoliceStation');
 const PoliceFoundItem = require('../models/PoliceFoundItem');
 const multer = require('multer');
 const cloudinary = require('../config/cloudinary'); 
+const LostFound = require('../models/LostFound');
+const { findPoliceMatches } = require('../utils/matching');
+const { sendTelegramNotification } = require('../config/telegramBot');
 
 const upload = multer({ storage: multer.memoryStorage() });
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretone';
@@ -237,6 +240,7 @@ router.post('/station/items', stationProtect, async (req, res) => {
     if (!title || !dateFound || !officerName) {
       return res.status(400).json({ error: 'title, dateFound, and officerName are required' });
     }
+
     const item = await PoliceFoundItem.create({
       title,
       description,
@@ -248,8 +252,40 @@ router.post('/station/items', stationProtect, async (req, res) => {
       station: req.station.id,
       officerName,
     });
+
+    // Fetch station details for notification
+    const station = await PoliceStation.findById(req.station.id);
+
+    // Find matching user lost items (opposite type)
+    const matches = await findPoliceMatches(item, LostFound);
+
+    // Send Telegram notification to each matched user
+    for (const match of matches) {
+      const lostItem = match.item;
+      const userId = lostItem.user._id;
+
+      
+      const mapsUrl = station.latitude && station.longitude
+        ? `https://www.google.com/maps?q=${station.latitude},${station.longitude}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(station.address || station.name)}`;
+
+      
+      const message = `<b>🔔 Police Match Found!</b>\n\n` +
+        `A police station (<b>${station.name}</b>) has reported a found <b>${item.category}</b> item that may match your lost item "<b>${lostItem.title}</b>".\n\n` +
+        `<b>Station Phone:</b> ${station.phone || 'N/A'}\n` +
+        `<b>Address:</b> ${station.address || 'N/A'}\n` +
+        `<b>Match Score:</b> ${match.score}%`;
+
+      await sendTelegramNotification(userId, message, {
+        inline_keyboard: [
+          [{ text: '📍 Station Location', url: mapsUrl }],
+        ],
+      });
+    }
+
     res.status(201).json(item);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });

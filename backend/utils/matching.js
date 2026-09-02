@@ -107,4 +107,27 @@ async function findMatches(newItem, LostFound, Notification) {
   }
 }
 
-module.exports = { findMatches };
+async function findPoliceMatches(policeItem, LostFound) {
+  const MATCH_THRESHOLD = 25;
+  const matches = [];
+  try {
+    const lostItems = await LostFound.find({
+      type: 'lost',
+      status: 'active',
+    }).populate('user', 'firstName lastName email');
+
+    for (const lostItem of lostItems) {
+      const score = calculateMatchScore(lostItem, policeItem); // reuse existing scoring
+      if (score >= MATCH_THRESHOLD) {
+        matches.push({ item: lostItem, score });
+      }
+    }
+    matches.sort((a, b) => b.score - a.score);
+    return matches;
+  } catch (err) {
+    console.error('Police matching error:', err);
+    return [];
+  }
+}
+
+module.exports = { findMatches, findPoliceMatches };
