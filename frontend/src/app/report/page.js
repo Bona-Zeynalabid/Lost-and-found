@@ -51,7 +51,7 @@ export default function ReportPage() {
   const [oppositeItems, setOppositeItems] = useState([]);
   const [matchResults, setMatchResults] = useState([]);
   const [showMatches, setShowMatches] = useState(false);
-  const matchTimerRef = useRef(null);
+  const [pendingNextStep, setPendingNextStep] = useState(null);
 
   const totalSteps = 5;
 
@@ -76,7 +76,7 @@ export default function ReportPage() {
         if (!res.ok) return;
         const data = await res.json();
         const all = [...(data.myItems || []), ...(data.communityItems || [])];
-        setOppositeItems(all);
+        setOppositeItems(all.filter(item => item && typeof item === 'object'));
       } catch (e) {
         console.error("Match fetch error:", e);
       }
@@ -85,8 +85,8 @@ export default function ReportPage() {
     fetchOppositeItems();
   }, [type, category, API]);
 
-  // Auto-search when detail fields change (dashboard search logic)
-  useEffect(() => {
+  // Search matches manually (called from Next button)
+  const searchMatches = () => {
     const detailFields = [
       details.fullName,
       details.idNumber,
@@ -103,44 +103,43 @@ export default function ReportPage() {
       .join(" ")
       .toLowerCase();
 
-    if (!detailFields || !Array.isArray(oppositeItems) || oppositeItems.length === 0) return;
+    if (!detailFields || !Array.isArray(oppositeItems) || oppositeItems.length === 0) {
+      setMatchResults([]);
+      return false;
+    }
 
-    if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
-    matchTimerRef.current = setTimeout(() => {
-      const matches = oppositeItems.filter((item) => {
-        const searchableText = [
-          item.title,
-          item.description,
-          item.category,
-          item.location?.address,
-          item.location?.city,
-          item.details?.brand,
-          item.details?.model,
-          item.details?.fullName,
-          item.details?.idNumber,
-          item.details?.keyIdentifier,
-          item.details?.color,
-          item.details?.material,
-          item.details?.species,
-          item.details?.breed,
-          item.details?.petName,
-          item.details?.documentType,
-          item.details?.nameOnDocument,
-          item.details?.deviceType,
-          item.details?.serialNumber,
-          ...(item.tags || []),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return detailFields.split(/\s+/).every((word) => searchableText.includes(word));
-      });
-      setMatchResults(matches);
-      if (matches.length > 0) setShowMatches(true);
-    }, 700);
+    const matches = oppositeItems.filter((item) => {
+      const searchableText = [
+        item.title,
+        item.description,
+        item.category,
+        item.location?.address,
+        item.location?.city,
+        item.details?.brand,
+        item.details?.model,
+        item.details?.fullName,
+        item.details?.idNumber,
+        item.details?.keyIdentifier,
+        item.details?.color,
+        item.details?.material,
+        item.details?.species,
+        item.details?.breed,
+        item.details?.petName,
+        item.details?.documentType,
+        item.details?.nameOnDocument,
+        item.details?.deviceType,
+        item.details?.serialNumber,
+        ...(item.tags || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return detailFields.split(/\s+/).every((word) => searchableText.includes(word));
+    });
 
-    return () => clearTimeout(matchTimerRef.current);
-  }, [details, oppositeItems]);
+    setMatchResults(matches);
+    return matches.length > 0;
+  };
 
   const handleCategoryChange = (cat) => {
     setCategory(cat);
@@ -349,7 +348,26 @@ export default function ReportPage() {
       return;
     }
     setError("");
+
+    // On step 2, run match search before advancing
+    if (currentStep === 2) {
+      const hasMatches = searchMatches();
+      if (hasMatches) {
+        setPendingNextStep(3);
+        setShowMatches(true);
+        return; // Don't advance yet
+      }
+    }
+
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+  };
+
+  const handleContinueFromMatches = () => {
+    setShowMatches(false);
+    if (pendingNextStep) {
+      setCurrentStep(pendingNextStep);
+      setPendingNextStep(null);
+    }
   };
 
   const handleBack = () => {
@@ -570,17 +588,6 @@ export default function ReportPage() {
               ) : (
                 <p className="text-xs text-[var(--text-secondary)] text-center py-4">Select a category first.</p>
               )}
-
-              {/* Match banner */}
-              {matchResults.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowMatches(true)}
-                  className="w-full p-3 border border-[var(--accent-gold)] bg-[var(--accent-gold)]/10 rounded-lg text-xs text-[var(--text-primary)] hover:bg-[var(--accent-gold)]/20 transition-colors"
-                >
-                  🔍 {matchResults.length} potential match{es} found — tap to view
-                </button>
-              )}
             </div>
           )}
 
@@ -663,34 +670,41 @@ export default function ReportPage() {
 
       {/* Matches Modal */}
       {showMatches && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-          onClick={() => setShowMatches(false)}
-        >
-          <div
-            className="glass-panel p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowMatches(false)}>
+          <div className="glass-panel p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">
                 Potential Matches ({matchResults.length})
               </h3>
               <button onClick={() => setShowMatches(false)}>✕</button>
             </div>
-            {matchResults.map((item) => (
-              <div
-                key={item._id}
-                className="p-3 border border-[var(--border-color)] rounded-lg"
-              >
-                <p className="font-semibold">{item.title}</p>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {item.category} • {item.location?.city || "Unknown location"}
-                </p>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {item.description}
-                </p>
-              </div>
-            ))}
+            {matchResults.length === 0 ? (
+              <p className="text-sm text-[var(--text-secondary)]">No matches found.</p>
+            ) : (
+              <>
+                {matchResults.map((item) => (
+                  <div key={item._id} className="p-3 border border-[var(--border-color)] rounded-lg">
+                    <p className="font-semibold">{item.title}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{item.category} • {item.location?.city || "Unknown location"}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{item.description}</p>
+                  </div>
+                ))}
+                <div className="flex gap-2 pt-3">
+                  <button
+                    onClick={handleContinueFromMatches}
+                    className="flex-1 py-2 bg-[var(--accent-green)] text-white text-xs uppercase tracking-wider rounded-lg hover:opacity-90"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    onClick={() => setShowMatches(false)}
+                    className="flex-1 py-2 border border-[var(--border-color)] text-[var(--text-primary)] text-xs uppercase tracking-wider rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
