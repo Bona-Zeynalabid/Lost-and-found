@@ -20,6 +20,8 @@ const initialDetails = {
   otherDescription: "",
 };
 
+const API = process.env.NEXT_PUBLIC_API_URL || "";
+
 export default function ReportPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,25 +64,26 @@ export default function ReportPage() {
 
   // Fetch opposite-type items when type/category changes
   useEffect(() => {
-    if (!type || !category) return;
+    if (!type || !category || !API) return;
 
     const fetchOppositeItems = async () => {
       try {
         const oppositeType = type === "lost" ? "found" : "lost";
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active&type=${oppositeType}`,
+          `${API}/api/items?status=active&type=${oppositeType}`,
           { credentials: "include" }
         );
-        if (res.ok) {
-          const data = await res.json();
-          const all = [...(data.myItems || []), ...(data.communityItems || [])];
-          setOppositeItems(all);
-        }
-      } catch (e) {}
+        if (!res.ok) return;
+        const data = await res.json();
+        const all = [...(data.myItems || []), ...(data.communityItems || [])];
+        setOppositeItems(all);
+      } catch (e) {
+        console.error("Match fetch error:", e);
+      }
     };
 
     fetchOppositeItems();
-  }, [type, category, process.env.NEXT_PUBLIC_API_URL]);
+  }, [type, category, API]);
 
   // Auto-search when detail fields change
   useEffect(() => {
@@ -100,7 +103,7 @@ export default function ReportPage() {
       .join(" ")
       .toLowerCase();
 
-    if (!detailFields || !oppositeItems.length) return;
+    if (!detailFields || !Array.isArray(oppositeItems) || oppositeItems.length === 0) return;
 
     if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
     matchTimerRef.current = setTimeout(() => {
@@ -172,7 +175,7 @@ export default function ReportPage() {
     imageFiles.forEach((file) => formData.append("files", file));
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/multiple`, {
+      const res = await fetch(`${API}/api/upload/multiple`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -217,7 +220,7 @@ export default function ReportPage() {
     };
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/items`, {
+      const res = await fetch(`${API}/api/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
