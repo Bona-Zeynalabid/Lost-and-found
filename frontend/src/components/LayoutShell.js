@@ -11,7 +11,7 @@ export default function LayoutShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   
-  const isPublicPage = pathname === "/" || pathname === "/auth";
+  const isPublicPage = pathname === "/" || pathname === "/auth" || pathname === "/police";
 
   const initTheme = useStore((s) => s.initTheme);
   const fetchUser = useStore((s) => s.fetchUser);

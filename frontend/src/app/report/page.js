@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useStore from "@/lib/store";
 
@@ -45,6 +45,12 @@ export default function ReportPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
+  // Matching states
+  const [oppositeItems, setOppositeItems] = useState([]);
+  const [matchResults, setMatchResults] = useState([]);
+  const [showMatches, setShowMatches] = useState(false);
+  const matchTimerRef = useRef(null);
+
   const totalSteps = 5;
 
   useEffect(() => {
@@ -53,6 +59,85 @@ export default function ReportPage() {
       setTitle(`${typeLabel} ${category}`);
     }
   }, [type, category]);
+
+  // Fetch opposite-type items when type/category changes
+  useEffect(() => {
+    if (!type || !category) return;
+
+    const fetchOppositeItems = async () => {
+      try {
+        const oppositeType = type === "lost" ? "found" : "lost";
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/items?status=active&type=${oppositeType}`,
+          { credentials: "include" }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const all = [...(data.myItems || []), ...(data.communityItems || [])];
+          setOppositeItems(all);
+        }
+      } catch (e) {}
+    };
+
+    fetchOppositeItems();
+  }, [type, category, process.env.NEXT_PUBLIC_API_URL]);
+
+  // Auto-search when detail fields change
+  useEffect(() => {
+    const detailFields = [
+      details.fullName,
+      details.idNumber,
+      details.brand,
+      details.model,
+      details.imei,
+      details.serialNumber,
+      details.deviceType,
+      details.numberOfKeys,
+      details.color,
+      details.material,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (!detailFields || !oppositeItems.length) return;
+
+    if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
+    matchTimerRef.current = setTimeout(() => {
+      const matches = oppositeItems.filter((item) => {
+        const searchable = [
+          item.title,
+          item.description,
+          item.category,
+          item.location?.address,
+          item.location?.city,
+          item.details?.brand,
+          item.details?.model,
+          item.details?.fullName,
+          item.details?.idNumber,
+          item.details?.keyIdentifier,
+          item.details?.color,
+          item.details?.material,
+          item.details?.species,
+          item.details?.breed,
+          item.details?.petName,
+          item.details?.documentType,
+          item.details?.nameOnDocument,
+          item.details?.deviceType,
+          item.details?.serialNumber,
+          ...(item.tags || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return detailFields.split(/\s+/).every((word) => searchable.includes(word));
+      });
+      setMatchResults(matches);
+      if (matches.length > 0) setShowMatches(true);
+    }, 700);
+
+    return () => clearTimeout(matchTimerRef.current);
+  }, [details, oppositeItems]);
 
   const handleCategoryChange = (cat) => {
     setCategory(cat);
@@ -148,7 +233,6 @@ export default function ReportPage() {
     }
   };
 
-  // Required fields for matching
   const isCurrentStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -164,7 +248,6 @@ export default function ReportPage() {
     }
   };
 
-  // Validate category-specific required fields
   const isCategoryDetailsValid = () => {
     if (!category) return true;
     switch (category) {
@@ -484,6 +567,17 @@ export default function ReportPage() {
               ) : (
                 <p className="text-xs text-[var(--text-secondary)] text-center py-4">Select a category first.</p>
               )}
+
+              {/* Match banner */}
+              {matchResults.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowMatches(true)}
+                  className="w-full p-3 border border-[var(--accent-gold)] bg-[var(--accent-gold)]/10 rounded-lg text-xs text-[var(--text-primary)] hover:bg-[var(--accent-gold)]/20 transition-colors"
+                >
+                  🔍 {matchResults.length} potential match{es} found — tap to view
+                </button>
+              )}
             </div>
           )}
 
@@ -551,6 +645,40 @@ export default function ReportPage() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Matches Modal */}
+      {showMatches && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowMatches(false)}
+        >
+          <div
+            className="glass-panel p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">
+                Potential Matches ({matchResults.length})
+              </h3>
+              <button onClick={() => setShowMatches(false)}>✕</button>
+            </div>
+            {matchResults.map((item) => (
+              <div
+                key={item._id}
+                className="p-3 border border-[var(--border-color)] rounded-lg"
+              >
+                <p className="font-semibold">{item.title}</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {item.category} • {item.location?.city || "Unknown location"}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {item.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       )}

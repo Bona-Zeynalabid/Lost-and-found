@@ -1,6 +1,3 @@
-// Simple keyword-based matching between lost and found items
-// Only matches opposite types (lost ↔ found)
-
 function normalizeText(text) {
   if (!text) return '';
   return text.toLowerCase().trim();

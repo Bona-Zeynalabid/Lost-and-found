@@ -10,12 +10,13 @@ const itemRoutes = require('./routes/items');
 const communityRoutes = require('./routes/community');
 const notificationRoutes = require('./routes/notifications');
 const uploadRoutes = require('./routes/upload');
+const policeRoutes = require('./routes/police');
 require('./config/telegramBot');
 
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 100, 
+  max: 1000, 
   message: {
     error: 'Too many requests, please try again later.',
   },
@@ -26,7 +27,7 @@ const generalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 20, 
+  max: 200, 
   message: {
     error: 'Too many login attempts, please try again later.',
   },
@@ -37,7 +38,7 @@ const authLimiter = rateLimit({
 
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 30, 
+  max: 300, 
   message: {
     error: 'Too many uploads, please try again later.',
   },
@@ -86,6 +87,7 @@ mongoose
     app.use('/api/community', communityRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/upload', uploadLimiter, uploadRoutes);
+    app.use('/api/police', policeRoutes);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
