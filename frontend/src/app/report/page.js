@@ -85,7 +85,7 @@ export default function ReportPage() {
     fetchOppositeItems();
   }, [type, category, API]);
 
-  // Auto-search when detail fields change
+  // Auto-search when detail fields change (dashboard search logic)
   useEffect(() => {
     const detailFields = [
       details.fullName,
@@ -108,7 +108,7 @@ export default function ReportPage() {
     if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
     matchTimerRef.current = setTimeout(() => {
       const matches = oppositeItems.filter((item) => {
-        const searchable = [
+        const searchableText = [
           item.title,
           item.description,
           item.category,
@@ -133,7 +133,7 @@ export default function ReportPage() {
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        return detailFields.split(/\s+/).every((word) => searchable.includes(word));
+        return detailFields.split(/\s+/).every((word) => searchableText.includes(word));
       });
       setMatchResults(matches);
       if (matches.length > 0) setShowMatches(true);
@@ -589,7 +589,16 @@ export default function ReportPage() {
             <div className="space-y-4">
               <div><label className={labelClass}>Address <span className="text-red-500">*</span></label><input type="text" required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Where did this happen?" className={inputClass} /></div>
               <div><label className={labelClass}>City <span className="text-red-500">*</span></label><input type="text" required value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className={inputClass} /></div>
-              <div><label className={labelClass}>Date <span className="text-red-500">*</span></label><input type="date" required value={dateOccurred} onChange={(e) => setDateOccurred(e.target.value)} className={inputClass} /></div>
+              <div>
+                <label className={labelClass}>Date <span className="text-red-500">*</span></label>
+                <input
+                  type="date"
+                  required
+                  value={dateOccurred}
+                  onChange={(e) => setDateOccurred(e.target.value)}
+                  className={`${inputClass} dark:[color-scheme:dark]`}
+                />
+              </div>
             </div>
           )}
 
