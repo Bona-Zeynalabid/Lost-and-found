@@ -146,10 +146,15 @@ router.put('/update-password', protect, async (req, res) => {
 
 
 router.post('/logout', (req, res) => {
-  res.cookie('token', '', { maxAge: 0 });
+  res.cookie('token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
   res.json({ success: true });
 });
-
 
 router.put('/connect-telegram', protect, async (req, res) => {
   try {

@@ -10,8 +10,11 @@ import MobileFab from "./MobileFab";
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  
-  const isPublicPage = pathname === "/" || pathname === "/auth" || pathname === "/police";
+
+  // Define page types
+  const isAuthPage = pathname === "/" || pathname === "/auth";
+  const isPolicePage = pathname === "/police";
+  const isPublicPage = isAuthPage || isPolicePage;
 
   const initTheme = useStore((s) => s.initTheme);
   const fetchUser = useStore((s) => s.fetchUser);
@@ -36,11 +39,11 @@ export default function LayoutShell({ children }) {
     if (authChecked && !user && !isPublicPage) {
       router.push("/");
     }
-    // Redirect authenticated users away from landing/auth pages
-    if (authChecked && user && isPublicPage) {
+    // Redirect authenticated users away from landing/auth pages (but NOT police page)
+    if (authChecked && user && isAuthPage) {
       router.push("/dashboard");
     }
-  }, [authChecked, user, pathname, isPublicPage, router]);
+  }, [authChecked, user, pathname, isPublicPage, isAuthPage, router]);
 
   if (!authChecked) {
     return (
@@ -54,21 +57,13 @@ export default function LayoutShell({ children }) {
     );
   }
 
-  // If user is logged in and on public page, show nothing while redirecting
-  if (isPublicPage && user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex gap-1.5">
-          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-2 h-2 bg-[var(--accent-green)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-        </div>
-      </div>
-    );
+  // Police page: render standalone (no normal header/nav)
+  if (isPolicePage) {
+    return <>{children}</>;
   }
 
-  // Public pages for unauthenticated users
-  if (isPublicPage) {
+  // Auth pages for unauthenticated users
+  if (isAuthPage) {
     return (
       <>
         <Header />
