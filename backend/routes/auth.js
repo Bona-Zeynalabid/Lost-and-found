@@ -149,9 +149,9 @@ router.post('/logout', (req, res) => {
   res.cookie('token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
+    maxAge: 0,
   });
   res.json({ success: true });
 });
