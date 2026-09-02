@@ -27,6 +27,12 @@ export default function LandingPage() {
             >
               Get Started
             </button>
+             <button
+              onClick={() => router.push("/police")}
+              className="px-8 py-3.5 border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium rounded-lg hover:bg-[var(--border-color)] transition-all"
+            >
+              Police Portal
+            </button>
           </div>
         </section>
       </div>
