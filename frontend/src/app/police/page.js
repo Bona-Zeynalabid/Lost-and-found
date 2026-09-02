@@ -578,15 +578,18 @@ export default function PolicePortal() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-main)]">
       <div className="w-full max-w-sm">
         {/* Back to Home */}
-        <button
-          onClick={() => router.push("/")}
-          className="mb-4 flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Home
-        </button>
+       <button
+  type="button"
+  onClick={() => {
+    window.location.href = "/";
+  }}
+  className="mb-4 flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+>
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+  </svg>
+  Back to Home
+</button>
 
         <div className="glass-panel p-6 w-full space-y-4">
           <div className="text-center">
