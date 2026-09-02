@@ -20,7 +20,7 @@ export default function LandingPage() {
             FoundIt connects communities through a trusted platform where lost items find their way back home.
           </p>
 
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 ">
             <button
               onClick={() => router.push("/auth")}
               className="px-8 py-3.5 bg-[var(--accent-green)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-sm"
