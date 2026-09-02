@@ -71,12 +71,13 @@ router.post('/admin/login', async (req, res) => {
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = signToken({ email, role: 'admin' });
-    res.cookie('adminToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+   res.cookie('adminToken', token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+  maxAge: 24 * 60 * 60 * 1000,
+});
     res.json({ success: true, admin: { email } });
   } catch (err) {
     console.error(err);
@@ -106,12 +107,13 @@ router.post('/station/login', async (req, res) => {
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = signToken({ id: station._id, email: station.email, role: 'station' });
-    res.cookie('stationToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+   res.cookie('stationToken', token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+  maxAge: 24 * 60 * 60 * 1000,
+});
     res.json({ success: true, station: { id: station._id, name: station.name, email: station.email } });
   } catch (err) {
     console.error(err);
