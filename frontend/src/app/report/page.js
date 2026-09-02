@@ -668,46 +668,171 @@ export default function ReportPage() {
         </div>
       )}
 
-      {/* Matches Modal */}
-      {showMatches && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowMatches(false)}>
-          <div className="glass-panel p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto space-y-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">
-                Potential Matches ({matchResults.length})
-              </h3>
-              <button onClick={() => setShowMatches(false)}>✕</button>
-            </div>
-            {matchResults.length === 0 ? (
-              <p className="text-sm text-[var(--text-secondary)]">No matches found.</p>
-            ) : (
-              <>
-                {matchResults.map((item) => (
-                  <div key={item._id} className="p-3 border border-[var(--border-color)] rounded-lg">
-                    <p className="font-semibold">{item.title}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">{item.category} • {item.location?.city || "Unknown location"}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">{item.description}</p>
-                  </div>
-                ))}
-                <div className="flex gap-2 pt-3">
-                  <button
-                    onClick={handleContinueFromMatches}
-                    className="flex-1 py-2 bg-[var(--accent-green)] text-white text-xs uppercase tracking-wider rounded-lg hover:opacity-90"
-                  >
-                    Continue
-                  </button>
-                  <button
-                    onClick={() => setShowMatches(false)}
-                    className="flex-1 py-2 border border-[var(--border-color)] text-[var(--text-primary)] text-xs uppercase tracking-wider rounded-lg"
-                  >
-                    Cancel
-                  </button>
+     {/* Matches Modal */}
+{showMatches && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+    onClick={() => setShowMatches(false)}
+  >
+    <div
+      className="glass-panel p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto space-y-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">
+          Potential Matches ({matchResults.length})
+        </h3>
+        <button onClick={() => setShowMatches(false)}>✕</button>
+      </div>
+
+      {/* Match Cards */}
+      {matchResults.length === 0 ? (
+        <p className="text-sm text-[var(--text-secondary)]">No matches found.</p>
+      ) : (
+        <div className="space-y-4">
+          {matchResults.map((item) => (
+            <div
+              key={item._id}
+              className="p-4 border border-[var(--border-color)] rounded-lg space-y-3"
+            >
+              {/* Images */}
+              {item.images?.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {item.images.slice(0, 3).map((img, i) => (
+                    <img
+                      key={i}
+                      src={img.url || img}
+                      alt=""
+                      className="w-full h-24 object-cover rounded-lg"
+                    />
+                  ))}
                 </div>
-              </>
-            )}
-          </div>
+              )}
+
+              {/* Type and Status */}
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-bold uppercase ${
+                    item.type === "lost" ? "text-red-600" : "text-green-600"
+                  }`}
+                >
+                  {item.type}
+                </span>
+                <span className="text-xs text-[var(--text-secondary)]">{item.status}</span>
+              </div>
+
+              {/* Title & Category */}
+              <div>
+                <h4 className="font-semibold text-sm">{item.title}</h4>
+                <p className="text-xs text-[var(--text-secondary)]">{item.category}</p>
+              </div>
+
+              {/* Location & Date */}
+              <div className="text-xs space-y-1">
+                <p>
+                  <span className="font-medium text-[var(--text-secondary)]">Location:</span>{" "}
+                  {[item.location?.address, item.location?.city].filter(Boolean).join(", ") || "Unknown"}
+                </p>
+                <p>
+                  <span className="font-medium text-[var(--text-secondary)]">Date:</span>{" "}
+                  {item.dateOccurred
+                    ? new Date(item.dateOccurred).toLocaleDateString()
+                    : "Unknown"}
+                </p>
+              </div>
+
+              {/* Description */}
+              {item.description && (
+                <p className="text-xs text-[var(--text-primary)] leading-relaxed">
+                  {item.description}
+                </p>
+              )}
+
+              {/* Contact */}
+              {(item.contact?.phone || item.contact?.email) && (
+                <div className="text-xs space-y-1 border-t border-[var(--border-color)] pt-2">
+                  {item.contact?.phone && (
+                    <p>
+                      <span className="font-medium text-[var(--text-secondary)]">Phone:</span>{" "}
+                      {item.contact.phone}
+                    </p>
+                  )}
+                  {item.contact?.email && (
+                    <p>
+                      <span className="font-medium text-[var(--text-secondary)]">Email:</span>{" "}
+                      {item.contact.email}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Reward */}
+              {item.reward > 0 && (
+                <p className="text-xs font-bold text-green-600">
+                  Reward: ${item.reward}
+                </p>
+              )}
+
+              {/* Category-specific details */}
+              {item.details &&
+                Object.keys(item.details).filter((k) => item.details[k]).length > 0 && (
+                  <div className="text-xs space-y-1 border-t border-[var(--border-color)] pt-2">
+                    <p className="font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                      {item.category} Details
+                    </p>
+                    {Object.entries(item.details).map(([key, value]) => {
+                      if (!value) return null;
+                      return (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-[var(--text-secondary)] capitalize">
+                            {key.replace(/([A-Z])/g, " $1").trim()}
+                          </span>
+                          <span className="text-[var(--text-primary)]">{value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+              {/* Tags */}
+              {item.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {item.tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 bg-[var(--border-color)] text-[var(--text-primary)] text-[10px] rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Action Buttons */}
+      {matchResults.length > 0 && (
+        <div className="flex gap-2 pt-3">
+          <button
+            onClick={handleContinueFromMatches}
+            className="flex-1 py-2 bg-[var(--accent-green)] text-white text-xs uppercase tracking-wider rounded-lg hover:opacity-90"
+          >
+            Continue
+          </button>
+          <button
+            onClick={() => setShowMatches(false)}
+            className="flex-1 py-2 border border-[var(--border-color)] text-[var(--text-primary)] text-xs uppercase tracking-wider rounded-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
     </div>
   );
 }
